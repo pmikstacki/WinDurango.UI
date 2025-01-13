@@ -35,20 +35,23 @@ namespace WinDurango.UI.Controls
         {
             if ((bool)unregisterCheckbox.IsChecked)
             {
-                var confirmation = new Confirmation(Localization.Locale.GetLocalizedText("Packages.UninstallConfirmation", _Name), "Uninstall?");
+                var confirmation =
+                    new Confirmation(Localization.Locale.GetLocalizedText("Packages.UninstallConfirmation", _Name),
+                        "Uninstall?");
                 Dialog.BtnClicked answer = await confirmation.Show();
-                if (answer == Dialog.BtnClicked.Yes)
-                {
-                    if (InstalledPackages.RemoveSymlinks(_familyName))
-                        await Packages.RemovePackage(_package);
-                }
+
+                if (answer != Dialog.BtnClicked.Yes)
+                    return;
             }
-            else
-            {
-                if (InstalledPackages.RemoveSymlinks(_familyName))
-                    InstalledPackages.RemoveInstalledPackage(_package);
-                App.MainWindow.AppsListPage.InitAppList();
-            }
+
+            if ((bool)unpatchCheckbox.IsChecked && await WinDurangoPatcher.UnpatchPackage(_package, null))
+                UnpatchPackage(_package, null);
+                
+            if ((bool)unregisterCheckbox.IsChecked)
+                await Packages.RemovePackage(_package);
+                
+            App.InstalledPackages.RemovePackage(_package);
+            App.MainWindow.AppsListPage.InitAppList();
         }
 
         private void OpenFolder(object sender, RoutedEventArgs e)
@@ -59,6 +62,8 @@ namespace WinDurango.UI.Controls
 
         private async Task StatusUpdateAsync(string status, int progress)
         {
+            Logger.WriteInformation(status);
+            
             if (currentDialog == null)
             {
                 currentDialog = new ProgressDialog("Working", "Patcher", false);
@@ -173,7 +178,11 @@ namespace WinDurango.UI.Controls
 
             MenuFlyout rcFlyout = new();
 
-            bool isPatched = InstalledPackages.GetInstalledPackage(_package.Id.FamilyName).Value.installedPackage.IsPatched;
+            bool isPatched = false;
+            
+            installedPackage instPackage = App.InstalledPackages.GetPackage(_package.Id.FamilyName);
+            if (instPackage != null)
+                isPatched = instPackage.IsPatched;
 
             MenuFlyoutItem patchButton = new MenuFlyoutItem
             {

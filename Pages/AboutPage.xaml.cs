@@ -26,8 +26,8 @@ namespace WinDurango.UI.Pages
 
             windurango_Info.developerInfo.Text = $"Version {App.Version}";
             windurango_Info.developerName.Content = "WinDurango.UI";
-            windurango_Info.developerName.NavigateUri = new Uri("https://github.com/WinDurango-project/WinDurango.UI");
-            windurango_Info.developerPicture.ProfilePicture = new BitmapImage(new Uri(getGitHubPfp("WinDurango-project")));
+            windurango_Info.developerName.NavigateUri = new Uri("https://github.com/WinDurango/WinDurango.UI");
+            windurango_Info.developerPicture.ProfilePicture = new BitmapImage(new Uri(getGitHubPfp("WinDurango")));
         }
     }
 }

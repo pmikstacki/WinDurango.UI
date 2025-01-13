@@ -1,3 +1,4 @@
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -5,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Threading.Tasks;
 using WinDurango.UI.Dialogs;
 using WinDurango.UI.Pages;
 using WinDurango.UI.Settings;
@@ -20,6 +22,34 @@ namespace WinDurango.UI
         public SettingsPage SettingsPage;
         public AboutPage AboutPage;
 
+        // ignore
+        // public async Task StatusUpdateAsync(string status, string title, int progress)
+        // {
+        //     if (currentDialog == null)
+        //     {
+        //         currentDialog = new ProgressDialog(status, title, false);
+        //         // shitty way of doing it
+        //         if (new ProgressDialog(status, title, false) != null)
+        //         {
+        //             await DispatcherQueue.EnqueueAsync(async () =>
+        //             {
+        //                 await currentDialog.ShowAsync();
+        //             });
+        //         } else
+        //         {
+        //             Logger.WriteDebug("???");
+        //         }
+        //     } else
+        //     {
+        //         currentDialog.Text = status;
+        //         currentDialog.Progress = progress;
+        //         if (progress == 100)
+        //         {
+        //             currentDialog.Hide();
+        //             currentDialog = null;
+        //         }
+        //     }
+        // }
 
         private void NavigationInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {

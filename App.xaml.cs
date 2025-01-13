@@ -28,6 +28,7 @@ namespace WinDurango.UI
         public static readonly uint VerPacked = (Major << 22) | (Minor << 12) | Patch;
         public static readonly string Version = $"{Fvi.ProductMajorPart}.{Fvi.ProductMinorPart}.{Fvi.ProductBuildPart}_{Hash}"; // 1.0 will be when bugs are squashed and everything works correctly.
         // other
+        public static readonly InstalledPackages InstalledPackages = new InstalledPackages();
         public static readonly WdSettings Settings = new();
         public static readonly MainWindow MainWindow = new();
 

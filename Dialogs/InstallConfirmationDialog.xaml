@@ -10,12 +10,12 @@
     SecondaryButtonText="Cancel">
 	<Grid>
         <StackPanel Orientation="Horizontal">
-            <Image Name="packageLogo" MaxHeight="128" MaxWidth="128"></Image>
+            <Image x:Name="packageLogo" MaxHeight="128" MaxWidth="128"></Image>
             <StackPanel Margin="10 0 0 0" Orientation="Vertical">
-                <TextBlock Name="packageName" FontWeight="Bold" FontSize="18" TextWrapping="Wrap" MaxWidth="400"></TextBlock>
-                <TextBlock Name="packagePublisher" TextWrapping="Wrap" MaxWidth="400"></TextBlock>
-                <TextBlock Name="packageVersion" TextWrapping="Wrap" MaxWidth="400"></TextBlock>
-                <TextBlock Name="packageLocation" TextWrapping="Wrap" MaxWidth="400"></TextBlock>
+                <TextBlock x:Name="packageName" FontWeight="Bold" FontSize="18" TextWrapping="Wrap" MaxWidth="400"></TextBlock>
+                <TextBlock x:Name="packagePublisher" TextWrapping="Wrap" MaxWidth="400"></TextBlock>
+                <TextBlock x:Name="packageVersion" TextWrapping="Wrap" MaxWidth="400"></TextBlock>
+                <TextBlock x:Name="packageLocation" TextWrapping="Wrap" MaxWidth="400"></TextBlock>
             </StackPanel>
         </StackPanel>
     </Grid>

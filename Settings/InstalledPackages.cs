@@ -8,41 +8,56 @@ using WinDurango.UI.Utils;
 
 namespace WinDurango.UI.Settings
 {
-    public class InstalledPackage
+    public class installedPackage
     {
         public string FullName { get; set; }
-        public List<string> SymlinkedDLLs { get; set; }
-        public List<string> OriginalDLLs { get; set; }
+        public string FamilyName { get; set; }
+        public string Version { get; set; }
+        public string InstallPath { get; set; }
+        public List<string> PatchedDlls { get; set; }
+        public List<string> OriginalDlls { get; set; }
         public bool IsPatched { get; set; }
     }
 
-    // TODO: make this not static
-    public abstract class InstalledPackages
+    public class InstalledPackages
     {
-
-        public static void RemoveInstalledPackage(Package pkg)
+        private static readonly JsonSerializerOptions JsonSerializerOptions = new()
         {
-            string path = App.DataDir;
-            if (!Directory.Exists(path))
+            WriteIndented = true
+        };
+        
+        private readonly List<installedPackage> _installedPackages;
+
+        public InstalledPackages()
+        {
+            if (!Directory.Exists(App.DataDir))
             {
-                _ = Directory.CreateDirectory(path);
+                Directory.CreateDirectory(App.DataDir);
             }
 
-            string filePath = Path.Combine(path, "InstalledPackages.json");
+            string filePath = Path.Combine(App.DataDir, "InstalledPackages.json");
 
             if (!File.Exists(filePath))
             {
-                Logger.WriteError("Could not get the list of installed packages!");
-                using StreamWriter writer = File.CreateText(filePath);
-                writer.WriteLine("{}");
+                Logger.WriteInformation("Creating empty InstalledPackages.json");
+                File.WriteAllText(filePath, "{}");
+                _installedPackages = [];
             }
-
-            string json = File.ReadAllText(filePath);
-            var installedPkgs = JsonSerializer.Deserialize<Dictionary<string, InstalledPackage>>(json) ?? [];
-
-            if (installedPkgs.TryGetValue(pkg.Id.FamilyName, out var package) && package.FullName == pkg.Id.FullName)
+            else
             {
-                _ = installedPkgs.Remove(pkg.Id.FamilyName);
+                string json = File.ReadAllText(filePath);
+
+                _installedPackages = JsonSerializer.Deserialize<List<installedPackage>>(json)
+                                     ?? [];
+            }
+        }
+        
+        public void RemovePackage(Package pkg)
+        {
+            installedPackage package = _installedPackages.Find(p => p.FamilyName == pkg.Id.FamilyName);
+            if (package != null && package.FullName == pkg.Id.FullName)
+            {
+                _installedPackages.Remove(package);
             }
             else
             {
@@ -50,121 +65,67 @@ namespace WinDurango.UI.Settings
                 return;
             }
 
-            string updated = JsonSerializer.Serialize(installedPkgs, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filePath, updated);
+            Save();
             Logger.WriteInformation($"Removed {pkg.DisplayName} ({pkg.Id.FamilyName}) from the InstalledPackages list.");
         }
 
-
-        public static Dictionary<string, InstalledPackage> GetInstalledPackages()
+        public List<installedPackage> GetPackages()
         {
-            if (!Directory.Exists(App.DataDir))
-            {
-                _ = Directory.CreateDirectory(App.DataDir);
-            }
-
-            string filePath = Path.Combine(App.DataDir, "InstalledPackages.json");
-
-            if (!File.Exists(filePath))
-            {
-                Logger.WriteError("Could not get the list of installed packages!");
-                using StreamWriter writer = File.CreateText(filePath);
-                writer.WriteLine("{}");
-            }
-
-            string json = File.ReadAllText(filePath);
-
-            Dictionary<string, InstalledPackage> installedPkgs = JsonSerializer.Deserialize<Dictionary<string, InstalledPackage>>(json)
-                                ?? [];
-
-            return installedPkgs;
+            return _installedPackages;
         }
 
-        public static void SaveInstalledPackages(Dictionary<string, InstalledPackage> installedPkgs)
+        public installedPackage? GetPackage(Package pkg)
         {
-            string json = JsonSerializer.Serialize(installedPkgs, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(Path.Combine(App.DataDir, "InstalledPackages.json"), json);
-            Logger.WriteDebug($"Saved InstalledPackages.json");
+            return _installedPackages.Find(p => p.FamilyName == pkg.Id.FamilyName);
+        }
+        
+        public installedPackage? GetPackage(string familyName)
+        {
+            return _installedPackages.Find(p => p.FamilyName == familyName);
         }
 
-        public static void UpdateInstalledPackage(string familyName, InstalledPackage installedPkg)
+        public void UpdatePackage(installedPackage package)
         {
-            Dictionary<string, InstalledPackage> installedPkgs = GetInstalledPackages();
-
-            installedPkgs[familyName] = installedPkg;
-            SaveInstalledPackages(installedPkgs);
-        }
-
-        public static bool RemoveSymlinks(string familyName)
-        {
-            var pkg = GetInstalledPackage(familyName).Value;
-            var pkgMount = Packages.GetPackageByFamilyName(pkg.familyName).EffectivePath;
-
-            if (Directory.Exists(pkgMount))
+            int index = _installedPackages.FindIndex(p => p.FamilyName == package.FamilyName);
+            if (index < 0)
             {
-                foreach (var symlink in pkg.installedPackage.SymlinkedDLLs)
-                {
-                    string symlinkPath = Path.Combine(pkgMount, symlink);
-                    if (File.Exists(symlinkPath))
-                    {
-                        var attributes = File.GetAttributes(symlinkPath);
-                        if (attributes.HasFlag(FileAttributes.ReparsePoint))
-                        {
-                            File.Delete(symlinkPath);
-                        }
-                    }
-                }
+                _installedPackages.Add(package);
             }
             else
             {
-                return false;
+                _installedPackages[index] = package;
             }
-            return true;
+            Save();
         }
 
-        public static (string familyName, InstalledPackage installedPackage)? GetInstalledPackage(string familyName)
+        public void Save()
         {
-            Dictionary<string, InstalledPackage> installedPkgs = GetInstalledPackages();
-            return installedPkgs.TryGetValue(familyName, out InstalledPackage installedPkg) ? (familyName, installedPkg) : null;
+            string json = JsonSerializer.Serialize(_installedPackages, JsonSerializerOptions);
+            File.WriteAllText(Path.Combine(App.DataDir, "InstalledPackages.json"), json);
+            Logger.WriteDebug("Saved InstalledPackages.json");
         }
-
-        public static void AddInstalledPackage(Package package)
+        
+        public void AddPackage(Package package)
         {
-            string path = App.DataDir;
-            if (!Directory.Exists(path))
+            if (_installedPackages.Exists(p => p.FamilyName == package.Id.FamilyName))
             {
-                _ = Directory.CreateDirectory(path);
-            }
-
-            string filePath = Path.Combine(path, "InstalledPackages.json");
-
-            if (!File.Exists(filePath))
-            {
-                Logger.WriteError("Could not get the list of installed packages!");
-                using StreamWriter writer = File.CreateText(filePath);
-                writer.WriteLine("{}");
-            }
-
-            string json = File.ReadAllText(filePath);
-            var installedPkgs = JsonSerializer.Deserialize<Dictionary<string, InstalledPackage>>(json) ?? [];
-
-            if (installedPkgs.ContainsKey(package.Id.FamilyName))
-            {
-                Logger.WriteError($"Couldn't add {package.DisplayName} as it already exists in the InstalledPackages JSON.");
+                Logger.WriteError($"Couldn't add {package.DisplayName} as it already exists.");
                 return;
             }
 
-            installedPkgs[package.Id.FamilyName] = new InstalledPackage
+            _installedPackages.Add(new installedPackage
             {
                 FullName = package.Id.FullName,
-                SymlinkedDLLs = [],
-                OriginalDLLs = [],
-                IsPatched = false
-            };
+                FamilyName = package.Id.FamilyName,
+                Version =
+                    $"{package.Id.Version.Major}.{package.Id.Version.Minor}.{package.Id.Version.Build}.{package.Id.Version.Revision}",
+                InstallPath = package.InstalledPath,
+                PatchedDlls = [],
+                OriginalDlls = [],
+                IsPatched = Path.Exists(package.InstalledPath)
+            });
 
-            string updated = JsonSerializer.Serialize(installedPkgs, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filePath, updated);
-            Logger.WriteInformation($"Added {package.DisplayName} ({package.Id.FamilyName}) to the InstalledPackages list.");
+            Save();
         }
     }
 }

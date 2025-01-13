@@ -26,22 +26,22 @@ namespace WinDurango.UI.Pages
         {
             appList.Children.Clear();
 
-            Dictionary<string, InstalledPackage> installedPackages = InstalledPackages.GetInstalledPackages();
+            List<installedPackage> installedPackages = App.InstalledPackages.GetPackages();
             var pm = new PackageManager();
 
             foreach (var installedPackage in installedPackages)
             {
-                if (pm.FindPackageForUser(WindowsIdentity.GetCurrent().User?.Value, installedPackage.Value.FullName) != null)
+                if (pm.FindPackageForUser(WindowsIdentity.GetCurrent().User?.Value, installedPackage.FullName) != null)
                 {
                     Grid outerGrid = new();
-                    AppTile gameContainer = new(installedPackage.Key);
+                    AppTile gameContainer = new(installedPackage.FamilyName);
                     outerGrid.Children.Add(gameContainer);
                     appList.Children.Add(outerGrid);
-                    Logger.WriteDebug($"Added {installedPackage.Key} to the app list");
+                    Logger.WriteDebug($"Added {installedPackage.FamilyName} to the app list");
                 }
                 else
                 {
-                    Logger.WriteError($"Couldn't find package {installedPackage.Value.FullName} in installed UWP packages list");
+                    Logger.WriteError($"Couldn't find package {installedPackage.FullName} in installed UWP packages list");
                 }
             }
         }

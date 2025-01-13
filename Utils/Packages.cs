@@ -14,6 +14,8 @@ using static WinDurango.UI.Localization.Locale;
 
 namespace WinDurango.UI.Utils
 {
+    // do not touch or you will combust from all the glue holding this together
+    // this class sucks so much that we literally had to stop bc we didn't know how to rewrite a function and make it still work with the UI stuff
     public abstract class Packages
     {
         // TODO: Make these methods not use the GUI, instead just throw an exception and catch it in the area where the method is actually invoked.
@@ -71,27 +73,6 @@ namespace WinDurango.UI.Utils
             }
 
             string package = await InstallPackageAsync(new Uri(mountDir + "\\AppxManifest.xml", UriKind.Absolute), addInstalledPackage);
-
-            if (package == null || !addInstalledPackage)
-                return;
-
-            var (familyName, installedPackage) = InstalledPackages.GetInstalledPackage(package).Value;
-
-            // DO NOT COPY THE DLLS FROM THIS
-            //if (hasExvd)
-            //{
-            //    foreach (string filePath in Directory.GetFiles(Path.Combine(exvdDir + "\\Windows\\System32")))
-            //    {
-            //        string fileName = Path.GetFileName(filePath);
-
-            //        if (File.Exists(Path.Combine(mountDir, fileName)))
-            //            continue;
-
-            //        FileSystemInfo symlink = File.CreateSymbolicLink(Path.Combine(mountDir, fileName), filePath);
-            //        installedPackage.SymlinkedDLLs.Add(symlink.Name);
-            //        InstalledPackages.UpdateInstalledPackage(familyName, installedPackage);
-            //    }
-            //}
         }
 
         public static string GetSplashScreenPath(Package pkg)
@@ -201,7 +182,7 @@ namespace WinDurango.UI.Utils
                 {
                     status.Text = $"Ui.UpdatingAppList".GetLocalizedString();
                     status.Progress = 80.0;
-                    InstalledPackages.AddInstalledPackage(recentPkg);
+                    App.InstalledPackages.AddPackage(recentPkg);
                     status.Progress = 90.0;
                     App.MainWindow.ReloadAppList();
                     status.Progress = 100.0;
@@ -238,7 +219,7 @@ namespace WinDurango.UI.Utils
                 var undeployment = await pm.RemovePackageAsync(package.Id.FullName, RemovalOptions.PreserveApplicationData);
 
                 status.Progress = 50.0;
-                InstalledPackages.RemoveInstalledPackage(package);
+                App.InstalledPackages.RemovePackage(package);
                 status.Progress = 100.0;
                 status.Hide();
                 Logger.WriteInformation($"{package.DisplayName} was uninstalled.");

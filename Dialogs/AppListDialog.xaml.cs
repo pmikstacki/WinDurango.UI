@@ -110,8 +110,8 @@ namespace WinDurango.UI.Dialogs
                 var package = listViewItem.Tag as Package;
                 if (package != null && package?.Id?.FamilyName != null)
                 {
-                    if (InstalledPackages.GetInstalledPackage(package.Id.FamilyName) == null)
-                        InstalledPackages.AddInstalledPackage(package);
+                    if (App.InstalledPackages.GetPackage(package.Id.FamilyName) == null)
+                        App.InstalledPackages.AddPackage(package);
                 }
             }
 

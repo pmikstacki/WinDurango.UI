@@ -27,6 +27,7 @@
                         <Flyout Placement="Bottom">
                             <StackPanel>
                                 <CheckBox Content="Unregister package" Name="unregisterCheckbox" IsChecked="True"/>
+                                <CheckBox Content="Unpatch package" Name="unpatchCheckbox" IsChecked="True"/>
                             </StackPanel>
                         </Flyout>
                     </SplitButton.Flyout>

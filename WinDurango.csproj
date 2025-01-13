@@ -14,8 +14,9 @@
     <DisableXbfLineInfo>False</DisableXbfLineInfo>
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
 	<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-	<Version>0.0.4</Version>
-	<AssemblyVersion>$(Version)</AssemblyVersion>
+	<Version>0.1.0</Version>
+	<AssemblyVersion>0.1.0</AssemblyVersion>
+	<Product>WinDurango UI</Product>
 </PropertyGroup>
 
   <ItemGroup>
@@ -42,6 +43,10 @@
 	<PropertyGroup>
 		<WindowsSdkPackageVersion>10.0.26100.38</WindowsSdkPackageVersion>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<AssemblyName>WinDurango UI</AssemblyName>
+		<Authors>WinDurango</Authors>
+		<Company>WinDurango</Company>
+		<PackageProjectUrl>https://github.com/WinDurango/WinDurango.UI</PackageProjectUrl>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">

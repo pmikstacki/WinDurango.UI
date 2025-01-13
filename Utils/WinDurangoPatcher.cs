@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using WinDurango.UI.Settings;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Package = Windows.ApplicationModel.Package;
 
 namespace WinDurango.UI.Utils
 {
@@ -23,62 +24,76 @@ namespace WinDurango.UI.Utils
         public string DownloadLink { get; set; }
     }
 
-    public class WinDurangoPatcher
+    public static class WinDurangoPatcher
     {
+        private static readonly HttpClient httpClient = new(new HttpClientHandler { AllowAutoRedirect = true });
         private static GitHubRelease wdRelease;
-        private static string patchDir = Path.Combine(App.DataDir, "WinDurangoCore");
+        private static string patchesPath = Path.Combine(App.DataDir, "WinDurangoCore");
 
-        public static async Task<bool> PatchPackage(Windows.ApplicationModel.Package package, bool forceRedownload, Func<string, int, Task> statusCallback)
+        static WinDurangoPatcher()
         {
-            Logger.WriteInformation($"Patching package {package.Id.FamilyName}");
-            statusCallback($"Patching {package.Id.FamilyName}", 0);
-            string curDate = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
-            var instPkg = InstalledPackages.GetInstalledPackage(package.Id.FamilyName);
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GitHubAPI/1.0)");
+        }
 
-            string installPath = package.InstalledPath;
-
-            statusCallback($"Getting release", 10);
-            await GetOrReuseRelease(); // don't use the return value since wdRelease is set regardless
+        public static async Task<bool> UnpatchPackage(Package package, Func<string, int, Task> statusCallback)
+        {
+            installedPackage pkg = App.InstalledPackages.GetPackage(package);
+            if (pkg == null)
+                return false;
             
+            return await UnpatchPackage(pkg, statusCallback);
+        }
+        
+        public static async Task<bool> PatchPackage(Package package, bool forceRedownload,
+            Func<string, int, Task> statusCallback)
+        {
+            installedPackage pkg = App.InstalledPackages.GetPackage(package);
+            if (pkg == null)
+                return false;
+            
+            return await PatchPackage(pkg, forceRedownload, statusCallback);
+        }
+        
+        public static async Task<bool> PatchPackage(installedPackage package, bool forceRedownload,
+            Func<string, int, Task> statusCallback)
+        {
+            statusCallback($"Patching {package.FamilyName}", 0);
+            string curDate = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
+            string installPath = package.InstallPath;
 
-            if (!Path.Exists(patchDir) || forceRedownload)
+            statusCallback("Getting latest release", 10);
+            await GetOrReuseRelease(); // don't use the return value since wdRelease is set regardless
+
+            if (!Path.Exists(patchesPath) || forceRedownload)
             {
-                if (forceRedownload && Path.Exists(patchDir))
-                    Directory.Delete(patchDir, true);
+                if (Path.Exists(patchesPath))
+                    Directory.Delete(patchesPath, true);
 
-                string zip = Path.Combine(App.DataDir, "WinDurangoCore.zip");
+                string archivePath = Path.Combine(App.DataDir, "WinDurangoCore.zip");
 
                 try
                 {
-                    using (HttpClient client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = true }))
-                    {
-                        statusCallback($"Downloading WinDurango release \"{wdRelease.Name}\"", 20);
-                        Logger.WriteInformation($"Downloading WinDurango release \"{wdRelease.Name}\"");
-                        using (HttpResponseMessage res = await client.GetAsync(wdRelease.DownloadLink, HttpCompletionOption.ResponseHeadersRead))
-                        {
-                            res.EnsureSuccessStatusCode();
+                    statusCallback($"Downloading release \"{wdRelease.Name}\"", 20);
 
-                            using (FileStream stream = new FileStream(zip, FileMode.Create, FileAccess.Write, FileShare.None))
-                            {
-                                statusCallback($"Writing release zip", 30);
-                                await res.Content.CopyToAsync(stream);
-                            }
-                        }
-                    }
+                    // using HttpResponseMessage res = await httpClient.GetAsync(wdRelease.DownloadLink,
+                    //     HttpCompletionOption.ResponseHeadersRead);
+                    // res.EnsureSuccessStatusCode();
+                    await using Stream httpStream = await httpClient.GetStreamAsync(wdRelease.DownloadLink);
+                    await using FileStream stream = new(archivePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                    statusCallback("Writing release zip", 30);
+                    await httpStream.CopyToAsync(stream);
                 }
                 catch (Exception ex)
                 {
                     Logger.WriteException(ex);
                     return false;
                 }
-            
 
                 try
                 {
-                    Directory.CreateDirectory(patchDir);
-                    Logger.WriteInformation($"Unzipping");
-                    statusCallback($"Unzipping", 40);
-                    ZipFile.ExtractToDirectory(zip, patchDir);
+                    Directory.CreateDirectory(patchesPath);
+                    statusCallback($"Extracting", 40);
+                    ZipFile.ExtractToDirectory(archivePath, patchesPath);
                 }
                 catch (Exception ex)
                 {
@@ -87,81 +102,93 @@ namespace WinDurango.UI.Utils
                 }
             }
 
-            statusCallback($"Patching", 50);
-            if (Path.Exists(patchDir))
+            statusCallback("Patching", 50);
+            if (Path.Exists(patchesPath))
             {
-                DirectoryInfo unzipped = new DirectoryInfo(patchDir);
+                DirectoryInfo patchesDir = new(patchesPath);
 
-                var unzippedFiles = unzipped.GetFiles("*.dll");
-                float prog = (90 - 50) / (float)unzippedFiles.Length;
-                DirectoryInfo pkg = new DirectoryInfo(installPath);
+                FileInfo[] patchFiles = patchesDir.GetFiles("*.dll");
+                float progressPerFile = (90 - 50) / (float)patchFiles.Length;
+                DirectoryInfo packageDir = new(installPath);
 
-                foreach (var file in unzippedFiles)
+                foreach (FileInfo file in patchFiles)
                 {
-                    int progress = (int)Math.Round(50 + prog * Array.IndexOf(unzippedFiles, file));
+                    int progress = (int)Math.Round(50 + progressPerFile * Array.IndexOf(patchFiles, file));
+
                     statusCallback($"Copying {file.Name}", progress);
-                    var pkgFName = pkg.GetFiles("*.dll").FirstOrDefault(pkgFName => pkgFName.Name == file.Name);
-                    if (pkgFName != null)
+                    FileInfo oldFile = packageDir.GetFiles("*.dll").FirstOrDefault(f => f.Name == file.Name);
+                    if (oldFile != null)
                     {
-                        Logger.WriteInformation($"Backing up old {pkgFName.Name}");
+                        Logger.WriteInformation($"Backing up old {oldFile.Name}");
                         string DllBackup = Path.Combine(installPath, "WDDllBackup", curDate);
                         if (!Path.Exists(DllBackup))
                             Directory.CreateDirectory(DllBackup);
 
-                        File.Move(pkgFName.FullName, Path.Combine(DllBackup, pkgFName.Name));
-                        if (!instPkg.Value.installedPackage.OriginalDLLs.Contains(Path.Combine(DllBackup, pkgFName.Name)))
-                            instPkg.Value.installedPackage.OriginalDLLs.Add(Path.Combine(DllBackup, pkgFName.Name));
+                        File.Move(oldFile.FullName, Path.Combine(DllBackup, oldFile.Name));
+                        if (!package.OriginalDlls.Contains(Path.Combine(DllBackup, oldFile.Name)))
+                            package.OriginalDlls.Add(Path.Combine(DllBackup, oldFile.Name));
                     }
 
-                    string symPath = Path.Combine(installPath, file.Name);
+                    string patchPath = Path.Combine(installPath, file.Name);
                     Logger.WriteInformation($"Added {file.Name}");
                     File.Copy(file.FullName, Path.Combine(installPath, file.Name));
-                    if (!instPkg.Value.installedPackage.SymlinkedDLLs.Contains(symPath))
-                        instPkg.Value.installedPackage.SymlinkedDLLs.Add(symPath);
+                    
+                    if (!package.PatchedDlls.Contains(patchPath))
+                        package.PatchedDlls.Add(patchPath);
                 }
-            } else
+            }
+            else
             {
                 Logger.WriteError("How did this happen???? patchDir should exist.");
                 return false;
             }
 
+            statusCallback($"Writing patch txt", 93);
+            StringBuilder builder = new();
+            builder.AppendLine($"# This file was patched by WinDurango.UI with WinDurango release \"{wdRelease.Name}\".");
+            builder.AppendLine("# If you want to unpatch manually, delete this file and edit %appdata%\\WinDurango\\UI\\InstalledPackages.json and set IsPatched to false.");
+            builder.AppendLine("# Format is ReleaseName;VerPacked");
+            builder.AppendLine($"{wdRelease.Name.Replace(";","-")};{App.VerPacked}");
+            await File.WriteAllTextAsync(Path.Combine(installPath, "installed.txt"), builder.ToString());
+            
             statusCallback($"Updating package list", 95);
-            instPkg.Value.installedPackage.IsPatched = true;
-            InstalledPackages.UpdateInstalledPackage(instPkg.Value.familyName, instPkg.Value.installedPackage);
+            package.IsPatched = true;
+            App.InstalledPackages.UpdatePackage(package);
             statusCallback($"Done!", 100);
             return true;
         }
 
-        public static async Task<bool> UnpatchPackage(Windows.ApplicationModel.Package package, Func<string, int, Task> statusCallback)
+        public static async Task<bool> UnpatchPackage(installedPackage package,
+            Func<string, int, Task> statusCallback)
         {
-            Logger.WriteInformation($"Unpatching package {package.Id.FamilyName}");
-            statusCallback($"Unpatching {package.Id.FamilyName}", 0);
-            var instPkg = InstalledPackages.GetInstalledPackage(package.Id.FamilyName);
-            var dlls = instPkg.Value.installedPackage.SymlinkedDLLs.ToArray();
-            var origDlls = instPkg.Value.installedPackage.OriginalDLLs.ToArray();
+            statusCallback($"Unpatching {package.FamilyName}", 0);
 
-            string installPath = package.InstalledPath;
+            string[] dlls = package.PatchedDlls.ToArray();
+            string[] originalDlls = package.OriginalDlls.ToArray();
 
-            float delProg = (0 - 50) / (float)instPkg.Value.installedPackage.SymlinkedDLLs.Count;
-            foreach (var dll in dlls)
+            string installPath = package.InstallPath;
+
+            float progressPerRemove = (0 - 50) / (float)package.PatchedDlls.Count;
+            foreach (string dll in dlls)
             {
-                int progress = (int)Math.Round(50 + delProg * Array.IndexOf(instPkg.Value.installedPackage.SymlinkedDLLs.ToArray(), dll));
+                int progress = (int)Math.Round(50 + progressPerRemove * Array.IndexOf(package.PatchedDlls.ToArray(), dll));
                 statusCallback($"Removing {dll}", progress);
                 try
                 {
                     File.Delete(dll);
-                } catch
+                }
+                catch
                 {
                     Logger.WriteError($"Failed to delete {dll}.");
                 }
-                if (instPkg.Value.installedPackage.SymlinkedDLLs.Contains(dll))
-                    instPkg.Value.installedPackage.SymlinkedDLLs.Remove(dll);
+
+                package.PatchedDlls.Remove(dll);
             };
 
-            float repProg = (99 - 50) / (float)instPkg.Value.installedPackage.OriginalDLLs.Count;
-            foreach (var dll in origDlls)
+            float progressPerRevert = (98 - 50) / (float)package.OriginalDlls.Count;
+            foreach (string dll in originalDlls)
             {
-                int progress = (int)Math.Round(50 + delProg * Array.IndexOf(origDlls, dll));
+                int progress = (int)Math.Round(50 + progressPerRevert * Array.IndexOf(originalDlls, dll));
                 statusCallback($"Placing back original DLL \"{dll}\"", progress);
                 try
                 {
@@ -171,42 +198,44 @@ namespace WinDurango.UI.Utils
                 {
                     Logger.WriteError($"Failed to copy {dll}.");
                 }
-                if (instPkg.Value.installedPackage.OriginalDLLs.Contains(dll))
-                    instPkg.Value.installedPackage.OriginalDLLs.Remove(dll);
+
+                package.OriginalDlls.Remove(dll);
             };
 
-            instPkg.Value.installedPackage.IsPatched = false;
+            package.IsPatched = false;
 
+            statusCallback($"Removing patched.txt", 99);
+            if (Path.Exists(Path.Combine(installPath, "installed.txt")))
+                File.Delete(Path.Combine(installPath, "installed.txt"));
+            
             statusCallback($"Updating package list", 99);
-            InstalledPackages.UpdateInstalledPackage(instPkg.Value.familyName, instPkg.Value.installedPackage);
+            App.InstalledPackages.UpdatePackage(package);
             statusCallback($"Done!", 100);
             return true;
         }
 
         // don't wanna use all the api shits lol
-        public static async Task<GitHubRelease> GetOrReuseRelease()
+        private static async Task<GitHubRelease> GetOrReuseRelease()
         {
-            if (wdRelease.GetType() != typeof(GitHubRelease))
+            if (wdRelease is null)
                 await GetLatestRelease();
 
             return wdRelease;
         }
 
-        public static async Task<GitHubRelease> GetLatestRelease()
+        private static async Task<GitHubRelease> GetLatestRelease()
         {
-            GitHubRelease release = new GitHubRelease();
+            GitHubRelease release = new();
 
-            string url = $"https://api.github.com/repos/WinDurango/WinDurango/releases";
+            const string url = $"https://api.github.com/repos/WinDurango/WinDurango/releases";
 
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GitHubAPI/1.0)");
-            var response = await client.GetAsync(url);
+            HttpResponseMessage response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
-            var json = await response.Content.ReadAsStringAsync();
+            string json = await response.Content.ReadAsStringAsync();
 
             JsonDocument document = JsonDocument.Parse(json);
-            var releases = document.RootElement.EnumerateArray();
+            JsonElement.ArrayEnumerator releases = document.RootElement.EnumerateArray();
 
             if (!releases.MoveNext())
                 throw new Exception("Couldn't find any releases?????");
@@ -217,7 +246,7 @@ namespace WinDurango.UI.Utils
 
             release.Name = name;
 
-            var assets = newestRelease.GetProperty("assets").EnumerateArray();
+            JsonElement.ArrayEnumerator assets = newestRelease.GetProperty("assets").EnumerateArray();
 
             if (!assets.MoveNext())
                 throw new Exception("Couldn't find any assets?????");
