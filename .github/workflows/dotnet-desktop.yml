@@ -84,12 +84,12 @@ jobs:
         Configuration: ${{ matrix.configuration }}
 
     - name: Publish
-      run: dotnet publish --configuration $env:Configuration --output ./$env:Configuration
+      run: dotnet publish --configuration $env:Configuration --output ./$env:Configuration -r win-x64
       env:
         Configuration: ${{ matrix.configuration }}
 
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: build-artifacts
+        name: WinDurangoUI-${{ matrix.configuration }}
         path: ./${{ matrix.configuration }}
