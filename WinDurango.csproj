@@ -17,6 +17,7 @@
 	<Version>0.1.0</Version>
 	<AssemblyVersion>0.1.0</AssemblyVersion>
 	<Product>WinDurango UI</Product>
+	<EnableMsixTooling>true</EnableMsixTooling>
 </PropertyGroup>
 
   <ItemGroup>
