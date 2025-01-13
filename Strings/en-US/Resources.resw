@@ -117,28 +117,60 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ReadingManifest" xml:space="preserve">
+  <data name="Packages.ReadingManifest" xml:space="preserve">
     <value>Reading manifest...</value>
   </data>
-  <data name="CheckingInstallStatus" xml:space="preserve">
+  <data name="Packages.CheckingInstallStatus" xml:space="preserve">
     <value>Checking if {0} is already installed...</value>
   </data>
-  <data name="InstallingPackage" xml:space="preserve">
+  <data name="Packages.InstallingPackage" xml:space="preserve">
     <value>Installing {0}...</value>
   </data>
-  <data name="GettingAppInfo" xml:space="preserve">
+  <data name="Packages.GettingAppInfo" xml:space="preserve">
     <value>Getting app info...</value>
   </data>
-  <data name="UpdatingAppList" xml:space="preserve">
+  <data name="Ui.UpdatingAppList" xml:space="preserve">
     <value>Updating app list...</value>
   </data>
-  <data name="PackageInstalled" xml:space="preserve">
+  <data name="Packages.PackageInstalled" xml:space="preserve">
     <value>{0} was installed! :)</value>
   </data>
-  <data name="UninstallingPackage" xml:space="preserve">
+  <data name="Packages.UninstallingPackage" xml:space="preserve">
     <value>Uninstalling {0}...</value>
   </data>
-  <data name="PackageUninstalled" xml:space="preserve">
+  <data name="Packages.PackageUninstalled" xml:space="preserve">
     <value>{0} was uninstalled.</value>
+  </data>
+  <data name="Packages.Error.AlreadyInstalled" xml:space="preserve">
+    <value>{0} is already installed.</value>
+  </data>
+  <data name="Packages.Error.PackageUninstallFailedEx" xml:space="preserve">
+    <value>Failed to uninstall {0}: {1}</value>
+  </data>
+  <data name="Error.NotFound" xml:space="preserve">
+    <value>{0} was not found.</value>
+  </data>
+  <data name="Packages.Error.PackageInstallFailedEx" xml:space="preserve">
+    <value>{0} failed to install: {1}</value>
+  </data>
+  <data name="Packages.Error.ManifestNotFoundNoMount" xml:space="preserve">
+    <value>AppxManifest does not exist in {0} and there is no "Mount" folder.</value>
+    <comment>for when AppxManifest.xml is not found and there is no Mount folder to look in</comment>
+  </data>
+  <data name="Packages.Error.ManifestNotFoundMulti" xml:space="preserve">
+    <value>AppxManifest does not exist in {0} and {1}</value>
+    <comment>for when it's not found in either the Mount folder or current chosen folder</comment>
+  </data>
+  <data name="Error.MountNotFound" xml:space="preserve">
+    <value>{0} was not found.</value>
+  </data>
+  <data name="Ui.Controls.EDbgLog" xml:space="preserve">
+    <value>Enable debug logging</value>
+  </data>
+  <data name="Ui.Controls.DDbgLog" xml:space="preserve">
+    <value>Disable debug logging</value>
+  </data>
+  <data name="Packages.UninstallConfirmation" xml:space="preserve">
+    <value>Are you sure you want to uninstall {0}?</value>
   </data>
 </root>

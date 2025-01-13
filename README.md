@@ -3,14 +3,16 @@
 [![View stargazers](https://img.shields.io/github/stars/WinDurango-project/WinDurango.UI)](https://github.com/WinDurango-project/WinDurango.UI/stargazers)   
 GUI for WinDurango, which is planned to allow for easy installing/patching among other random stuff I decide lmfao
 
+### NOTICE: A large amount of the codebase has to be rewritten as I was not a good C# dev when this was originally made (statics everywhere, messy fields, etc)
+#### Additonally, the translation shit does NOT work at this moment, I cannot figure out why.
+
 > [!NOTE]
 > This does nothing more than provide a GUI for easily registering and patching packages with WinDurango.   
-> Additionally, I don't know much about C#... so the code is probably very messy.
 
 # Roadmap
 
 ## Features
- - [ ] Compiling the DLLs and patching automatically
+ - [X] Patching
  - [X] Allow for package removal from UI instead of just completely uninstalling.
  - [X] Installation options
  - [X] Scan for already installed EraOS/XUWP stuff

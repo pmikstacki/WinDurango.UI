@@ -12,7 +12,7 @@ namespace WinDurango.UI.Utils
     public class Logger
     {
         public static readonly Logger Instance = new();
-        private static readonly string logDir = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinDurango"), "logs");
+        private static readonly string logDir = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinDurango\\UI"), "logs");
         private static readonly string logFile = Path.Combine(logDir, $"WinDurangoUI_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log");
         private static readonly object @lock = new();
 
@@ -22,6 +22,7 @@ namespace WinDurango.UI.Utils
                 Directory.CreateDirectory(logDir);
         }
 
+        public static void WriteLine(string str) => Instance.WriteLog(LogLevel.Info, str);
         public static void WriteDebug(string str) => Instance.WriteLog(LogLevel.Debug, str);
         public static void WriteError(string str) => Instance.WriteLog(LogLevel.Error, str);
         public static void WriteWarning(string str) => Instance.WriteLog(LogLevel.Warning, str);
@@ -52,7 +53,6 @@ namespace WinDurango.UI.Utils
 
             string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [{level.ToString().ToUpper()}] {message}";
             Debug.WriteLine(logEntry);
-
             lock (@lock)
             {
                 using StreamWriter writer = new(logFile, true);

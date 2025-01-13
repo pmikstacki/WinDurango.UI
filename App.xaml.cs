@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows.Markup.Localizer;
 using Windows.Storage;
 using WinDurango.UI.Settings;
 using WinDurango.UI.Utils;
@@ -14,7 +15,7 @@ namespace WinDurango.UI
     public partial class App : Application
     {
         // constants
-        public static readonly string DataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinDurango");
+        public static readonly string DataDir = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinDurango"), "UI");
         public static readonly string AppDir = AppContext.BaseDirectory;
         private static readonly FileVersionInfo Fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
         // versioning
@@ -39,9 +40,10 @@ namespace WinDurango.UI
             return (major, minor, patch);
         }
 
-        private async Task InitializeLocalizer()
+        private static async Task InitializeLocalizer()
         {
             string StringsFolderPath = Path.Combine(AppContext.BaseDirectory, "Strings");
+            Logger.WriteDebug(AppContext.BaseDirectory);
             StorageFolder stringsFolder = await StorageFolder.GetFolderFromPathAsync(StringsFolderPath);
 
             ILocalizer localizer = await new LocalizerBuilder()
@@ -51,6 +53,8 @@ namespace WinDurango.UI
                     options.DefaultLanguage = "en-US";
                 })
                 .Build();
+            // await localizer.SetLanguage(Settings.Settings.Language);
+            Logger.WriteDebug($"Using language {localizer.GetCurrentLanguage()}");
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

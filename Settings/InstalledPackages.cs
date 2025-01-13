@@ -12,14 +12,17 @@ namespace WinDurango.UI.Settings
     {
         public string FullName { get; set; }
         public List<string> SymlinkedDLLs { get; set; }
+        public List<string> OriginalDLLs { get; set; }
+        public bool IsPatched { get; set; }
     }
 
+    // TODO: make this not static
     public abstract class InstalledPackages
     {
 
         public static void RemoveInstalledPackage(Package pkg)
         {
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinDurango");
+            string path = App.DataDir;
             if (!Directory.Exists(path))
             {
                 _ = Directory.CreateDirectory(path);
@@ -127,7 +130,7 @@ namespace WinDurango.UI.Settings
 
         public static void AddInstalledPackage(Package package)
         {
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinDurango");
+            string path = App.DataDir;
             if (!Directory.Exists(path))
             {
                 _ = Directory.CreateDirectory(path);
@@ -154,7 +157,9 @@ namespace WinDurango.UI.Settings
             installedPkgs[package.Id.FamilyName] = new InstalledPackage
             {
                 FullName = package.Id.FullName,
-                SymlinkedDLLs = []
+                SymlinkedDLLs = [],
+                OriginalDLLs = [],
+                IsPatched = false
             };
 
             string updated = JsonSerializer.Serialize(installedPkgs, new JsonSerializerOptions { WriteIndented = true });

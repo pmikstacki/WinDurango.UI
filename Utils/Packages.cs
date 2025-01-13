@@ -66,7 +66,7 @@ namespace WinDurango.UI.Utils
 
             if (!Directory.Exists(mountDir))
             {
-                await new NoticeDialog(GetLocalizedText($"mountNotFound", mountDir), "Error").Show();
+                await new NoticeDialog(GetLocalizedText($"Error.mountNotFound", mountDir), "Error").Show();
                 return;
             }
 
@@ -77,20 +77,21 @@ namespace WinDurango.UI.Utils
 
             var (familyName, installedPackage) = InstalledPackages.GetInstalledPackage(package).Value;
 
-            if (hasExvd)
-            {
-                foreach (string filePath in Directory.GetFiles(Path.Combine(exvdDir + "\\Windows\\System32")))
-                {
-                    string fileName = Path.GetFileName(filePath);
+            // DO NOT COPY THE DLLS FROM THIS
+            //if (hasExvd)
+            //{
+            //    foreach (string filePath in Directory.GetFiles(Path.Combine(exvdDir + "\\Windows\\System32")))
+            //    {
+            //        string fileName = Path.GetFileName(filePath);
 
-                    if (File.Exists(Path.Combine(mountDir, fileName)))
-                        continue;
+            //        if (File.Exists(Path.Combine(mountDir, fileName)))
+            //            continue;
 
-                    FileSystemInfo symlink = File.CreateSymbolicLink(Path.Combine(mountDir, fileName), filePath);
-                    installedPackage.SymlinkedDLLs.Add(symlink.Name);
-                    InstalledPackages.UpdateInstalledPackage(familyName, installedPackage);
-                }
-            }
+            //        FileSystemInfo symlink = File.CreateSymbolicLink(Path.Combine(mountDir, fileName), filePath);
+            //        installedPackage.SymlinkedDLLs.Add(symlink.Name);
+            //        InstalledPackages.UpdateInstalledPackage(familyName, installedPackage);
+            //    }
+            //}
         }
 
         public static string GetSplashScreenPath(Package pkg)
@@ -145,19 +146,19 @@ namespace WinDurango.UI.Utils
             // TODO: strip UI
             if (!File.Exists(manifestPath))
             {
-                await new NoticeDialog(GetLocalizedText("NotFound", manifestPath), "Error").Show();
+                await new NoticeDialog(GetLocalizedText("Error.NotFound", manifestPath), "Error").Show();
                 return null;
             }
 
 
             Logger.WriteInformation($"Installing package \"{manifestPath}\"...");
-            var status = new ProgressDialog($"Installing package...", "Installing", false);
+            var status = new ProgressDialog(GetLocalizedText("Packages.InstallingPackage", "Package..."), "Installing", false);
             _ = App.MainWindow.DispatcherQueue.TryEnqueue(async () => await status.ShowAsync());
             PackageManager pm = new();
             try
             {
                 Logger.WriteInformation($"Reading manifest...");
-                status.Text = "ReadingManifest".GetLocalizedString();
+                status.Text = "Packages.ReadingManifest".GetLocalizedString();
                 string manifest;
                 await using (var stream = File.OpenRead(manifestPath))
                 {
@@ -181,24 +182,24 @@ namespace WinDurango.UI.Utils
                 {
                     status.Hide();
                     Logger.WriteError($"{pkgName} is already installed.");
-                    await new NoticeDialog(GetLocalizedText("AlreadyInstalled", pkgName), "Error").Show();
+                    await new NoticeDialog(GetLocalizedText("Error.AlreadyInstalled", pkgName), "Error").Show();
                     return null;
                 }
 
 
                 status.Progress = 40.0;
-                status.Text = GetLocalizedText("InstallingPackage", pkgName);
+                status.Text = GetLocalizedText("Packages.InstallingPackage", pkgName);
                 Logger.WriteInformation($"Registering...");
                 var deployment = await pm.RegisterPackageAsync(appxManifestUri, null, DeploymentOptions.DevelopmentMode);
 
                 status.Progress = 60.0;
 
-                status.Text = "GettingAppInfo".GetLocalizedString();
+                status.Text = "Packages.GettingAppInfo".GetLocalizedString();
                 var recentPkg = GetMostRecentlyInstalledPackage();
 
                 if (addInstalledPackage)
                 {
-                    status.Text = $"UpdatingAppList".GetLocalizedString();
+                    status.Text = $"Ui.UpdatingAppList".GetLocalizedString();
                     status.Progress = 80.0;
                     InstalledPackages.AddInstalledPackage(recentPkg);
                     status.Progress = 90.0;
@@ -212,7 +213,7 @@ namespace WinDurango.UI.Utils
 
                 status.Hide();
                 Logger.WriteInformation($"{recentPkg.Id.Name} was installed.");
-                await new NoticeDialog(GetLocalizedText("PackageInstalled", recentPkg.Id.Name)).Show();
+                await new NoticeDialog(GetLocalizedText("Packages.PackageInstalled", recentPkg.Id.Name)).Show();
                 return recentPkg.Id.FamilyName;
             }
             catch (Exception e)
@@ -221,7 +222,7 @@ namespace WinDurango.UI.Utils
                 status.Hide();
                 Logger.WriteError($"{appxManifestUri} failed to install");
                 Logger.WriteException(e);
-                await new NoticeDialog(GetLocalizedText("PackageInstallFailedEx", appxManifestUri, e.Message), "Error").Show();
+                await new NoticeDialog(GetLocalizedText("Packages.Error.PackageInstallFailedEx", appxManifestUri, e.Message), "Error").Show();
                 return null;
             }
         }
@@ -229,7 +230,7 @@ namespace WinDurango.UI.Utils
         public static async Task RemovePackage(Package package)
         {
             Logger.WriteError($"Uninstalling {package.DisplayName}...");
-            var status = new ProgressDialog(GetLocalizedText("UninstallingPackage", package.DisplayName), "Uninstalling", false);
+            var status = new ProgressDialog(GetLocalizedText("Packages.UninstallingPackage", package.DisplayName), "Uninstalling", false);
             _ = App.MainWindow.DispatcherQueue.TryEnqueue(async () => await status.ShowAsync());
             PackageManager pm = new();
             try
@@ -241,7 +242,7 @@ namespace WinDurango.UI.Utils
                 status.Progress = 100.0;
                 status.Hide();
                 Logger.WriteInformation($"{package.DisplayName} was uninstalled.");
-                await new NoticeDialog(GetLocalizedText("PackageUninstalled", package.DisplayName)).Show();
+                await new NoticeDialog(GetLocalizedText("Packages.PackageUninstalled", package.DisplayName)).Show();
                 App.MainWindow.ReloadAppList();
             }
             catch (Exception ex)
@@ -249,7 +250,7 @@ namespace WinDurango.UI.Utils
                 status.Hide();
                 Logger.WriteError($"{package.DisplayName} failed to uninstall");
                 Logger.WriteException(ex);
-                await new NoticeDialog(GetLocalizedText("PackageUninstallFailedEx", package.DisplayName, ex.Message), "Error!").Show();
+                await new NoticeDialog(GetLocalizedText("Packages.Error.PackageUninstallFailedEx", package.DisplayName, ex.Message), "Error!").Show();
             }
             return;
         }

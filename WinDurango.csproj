@@ -32,7 +32,6 @@
   <ItemGroup>
     <None Remove="Controls\AppTile.xaml" />
     <None Remove="Controls\ContributorInfo.xaml" />
-    <None Remove="Controls\NewFile1.txt" />
     <None Remove="Dialogs\AppListDialog.xaml" />
     <None Remove="Dialogs\InstallConfirmationDialog.xaml" />
     <None Remove="Pages\AboutPage.xaml" />
@@ -42,6 +41,31 @@
 
 	<PropertyGroup>
 		<WindowsSdkPackageVersion>10.0.26100.38</WindowsSdkPackageVersion>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+	  <DebugType>embedded</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+	  <DebugType>embedded</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+	  <DebugType>embedded</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+	  <DebugType>embedded</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+	  <DebugType>embedded</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+	  <DebugType>embedded</DebugType>
 	</PropertyGroup>
 	
   <ItemGroup>
@@ -98,12 +122,6 @@
 	<Content Include="Strings\**\*.resw">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</Content>
-</ItemGroup>
-
-<ItemGroup>
-  <Content Remove="Strings\en-US\Controls.resw" />
-  <Content Remove="Strings\en-US\Errors.resw" />
-  <Content Remove="Strings\en-US\Resources.resw" />
 </ItemGroup>
 
   <ItemGroup>

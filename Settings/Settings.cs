@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
@@ -22,6 +23,10 @@ public class WdSettingsData
     public uint SaveVersion { get; set; } = App.VerPacked;
     public ThemeSetting Theme { get; set; } = ThemeSetting.Fluent;
     public bool DebugLoggingEnabled { get; set; } = false;
+
+    public string Language { get; set; } = "en-US";
+
+    public string DownloadedWDVer { get; set; }
 }
 
 public class WdSettings

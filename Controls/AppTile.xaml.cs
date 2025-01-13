@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using CommunityToolkit.WinUI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
@@ -24,12 +26,16 @@ namespace WinDurango.UI.Controls
         private string _Publisher;
         private string _Version;
         private Uri _Logo;
+        private ProgressDialog currentDialog = null;
+        // "Just Works"
+        // this needs to be fixed.
+        private bool shouldShowDone = true;
 
         private async void HandleUnregister(object sender, SplitButtonClickEventArgs e)
         {
             if ((bool)unregisterCheckbox.IsChecked)
             {
-                var confirmation = new Confirmation($"Are you sure you want to uninstall {_Name}?", "Uninstall?");
+                var confirmation = new Confirmation(Localization.Locale.GetLocalizedText("Packages.UninstallConfirmation", _Name), "Uninstall?");
                 Dialog.BtnClicked answer = await confirmation.Show();
                 if (answer == Dialog.BtnClicked.Yes)
                 {
@@ -51,6 +57,58 @@ namespace WinDurango.UI.Controls
             _ = Process.Start(new ProcessStartInfo(_package.InstalledPath) { UseShellExecute = true });
         }
 
+        private async Task StatusUpdateAsync(string status, int progress)
+        {
+            if (currentDialog == null)
+            {
+                currentDialog = new ProgressDialog("Working", "Patcher", false);
+                // shitty way of doing it
+                if (new ProgressDialog("Working", "Patcher", false) != null)
+                {
+                    await App.MainWindow.DispatcherQueue.EnqueueAsync(async () =>
+                    {
+                        await currentDialog.ShowAsync();
+                    });
+                } else
+                {
+                    Logger.WriteDebug("???");
+                }
+            } else
+            {
+                currentDialog.Text = status;
+                currentDialog.Progress = progress;
+                if (progress == 100)
+                {
+                    Logger.WriteDebug("100");
+                    currentDialog.Hide();
+                    currentDialog = null;
+                    if (shouldShowDone)
+                        await new NoticeDialog("Done!", "Patcher").Show();
+                }
+            }
+        }
+
+        private async void RepatchPackage(object sender, RoutedEventArgs args)
+        {
+            shouldShowDone = false;
+            await WinDurangoPatcher.UnpatchPackage(_package, StatusUpdateAsync);
+            shouldShowDone = true;
+            await WinDurangoPatcher.PatchPackage(_package, true, StatusUpdateAsync);
+            App.MainWindow.ReloadAppList();
+        }
+
+        private async void UnpatchPackage(object sender, RoutedEventArgs args)
+        {
+            await WinDurangoPatcher.UnpatchPackage(_package, StatusUpdateAsync);
+            App.MainWindow.ReloadAppList();
+        }
+
+        private async void PatchPackage(object sender, RoutedEventArgs args)
+        {
+            await WinDurangoPatcher.PatchPackage(_package, false, StatusUpdateAsync);
+            App.MainWindow.ReloadAppList();
+        }
+
         public AppTile(string familyName)
         {
             _familyName = familyName;
@@ -68,6 +126,7 @@ namespace WinDurango.UI.Controls
             _Publisher = _package.PublisherDisplayName ?? _package.Id.PublisherId;
             _Version = $"{_package.Id.Version.Major.ToString() ?? "U"}.{_package.Id.Version.Minor.ToString() ?? "U"}.{_package.Id.Version.Build.ToString() ?? "U"}.{_package.Id.Version.Revision.ToString() ?? "U"}";
             _Logo = _package.Logo;
+
             string ss = Packages.GetSplashScreenPath(_package);
             IReadOnlyList<AppListEntry> appListEntries = null;
             try
@@ -112,7 +171,32 @@ namespace WinDurango.UI.Controls
             }
             infoExpander.Header = _Name;
 
-            Flyout rcFlyout = new();
+            MenuFlyout rcFlyout = new();
+
+            bool isPatched = InstalledPackages.GetInstalledPackage(_package.Id.FamilyName).Value.installedPackage.IsPatched;
+
+            MenuFlyoutItem patchButton = new MenuFlyoutItem
+            {
+                Text = isPatched ? "Repatch" : "Patch",
+                Name = "patchButton"
+            };
+
+            if (isPatched)
+            {
+                patchButton.Click += RepatchPackage;
+                MenuFlyoutItem unpatchButton = new MenuFlyoutItem
+                {
+                    Text = "Unpatch",
+                    Name = "unpatchButton"
+                };
+                unpatchButton.Click += UnpatchPackage;
+                rcFlyout.Items.Add(unpatchButton);
+            } else
+            {
+                patchButton.Click += PatchPackage;
+            }
+
+            rcFlyout.Items.Add(patchButton);
 
             expanderVersion.Text = $"Publisher: {_Publisher}\nVersion {_Version}";
 
