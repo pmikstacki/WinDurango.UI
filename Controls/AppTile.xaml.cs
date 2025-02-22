@@ -26,10 +26,6 @@ namespace WinDurango.UI.Controls
         private string _Publisher;
         private string _Version;
         private Uri _Logo;
-        private ProgressDialog currentDialog = null;
-        // "Just Works"
-        // this needs to be fixed.
-        private bool shouldShowDone = true;
 
         private async void HandleUnregister(object sender, SplitButtonClickEventArgs e)
         {
@@ -42,14 +38,25 @@ namespace WinDurango.UI.Controls
 
                 if (answer != Dialog.BtnClicked.Yes)
                     return;
+                confirmation.Remove();
             }
 
             if ((bool)unpatchCheckbox.IsChecked && await WinDurangoPatcher.UnpatchPackage(_package, null))
-                UnpatchPackage(_package, null);
-                
+            {
+                await WinDurangoPatcher.UnpatchPackage(_package, null);
+            }
+
             if ((bool)unregisterCheckbox.IsChecked)
-                await Packages.RemovePackage(_package);
-                
+            {
+                var controller = new ProgressDialog($"Uninstalling {_Name}...", $"Uninstalling {_Name}", isIndeterminate: true).GetController();
+                await controller.CreateAsync(async () =>
+                {
+                    await Packages.RemovePackage(_package, controller);
+                });
+                NoticeDialog good = new NoticeDialog($"{_Name} has been uninstalled.", "Uninstalled");
+                await good.Show();
+            }
+
             App.InstalledPackages.RemovePackage(_package);
             App.MainWindow.AppsListPage.InitAppList();
         }
@@ -59,58 +66,56 @@ namespace WinDurango.UI.Controls
             Logger.WriteDebug($"Opening app installation folder {_package.InstalledPath}");
             _ = Process.Start(new ProcessStartInfo(_package.InstalledPath) { UseShellExecute = true });
         }
-
-        private async Task StatusUpdateAsync(string status, int progress)
+        
+        private async void ShowNotImplemented(object sender, RoutedEventArgs e)
         {
-            Logger.WriteInformation(status);
-            
-            if (currentDialog == null)
-            {
-                currentDialog = new ProgressDialog("Working", "Patcher", false);
-                // shitty way of doing it
-                if (new ProgressDialog("Working", "Patcher", false) != null)
-                {
-                    await App.MainWindow.DispatcherQueue.EnqueueAsync(async () =>
-                    {
-                        await currentDialog.ShowAsync();
-                    });
-                } else
-                {
-                    Logger.WriteDebug("???");
-                }
-            } else
-            {
-                currentDialog.Text = status;
-                currentDialog.Progress = progress;
-                if (progress == 100)
-                {
-                    Logger.WriteDebug("100");
-                    currentDialog.Hide();
-                    currentDialog = null;
-                    if (shouldShowDone)
-                        await new NoticeDialog("Done!", "Patcher").Show();
-                }
-            }
+            Logger.WriteWarning($"Not implemented");
+            NoticeDialog impl = new NoticeDialog($"This feature has not been implemented yet.", "Not Implemented");
+            await impl.Show();
         }
 
         private async void RepatchPackage(object sender, RoutedEventArgs args)
         {
-            shouldShowDone = false;
-            await WinDurangoPatcher.UnpatchPackage(_package, StatusUpdateAsync);
-            shouldShowDone = true;
-            await WinDurangoPatcher.PatchPackage(_package, true, StatusUpdateAsync);
+            var progress = new ProgressDialog($"Repatching {_Name}...", $"Repatching {_Name}", isIndeterminate: true).GetController();
+            await progress.CreateAsync(async () =>
+            {
+                await WinDurangoPatcher.UnpatchPackage(_package, progress);
+                await WinDurangoPatcher.PatchPackage(_package, true, progress);
+            });
+            NoticeDialog good = new NoticeDialog($"WinDurango was reinstalled in package {_Name}", "Reinstalled");
+            await good.Show();
+            
             App.MainWindow.ReloadAppList();
         }
 
         private async void UnpatchPackage(object sender, RoutedEventArgs args)
         {
-            await WinDurangoPatcher.UnpatchPackage(_package, StatusUpdateAsync);
+            var progress = new ProgressDialog($"Unpatching {_Name}...", $"Unpatching {_Name}", isIndeterminate: true).GetController();
+            await progress.CreateAsync(async () =>
+            {
+                await WinDurangoPatcher.UnpatchPackage(_package, progress);
+            });
+            if (!progress.failed)
+            {
+                NoticeDialog good = new NoticeDialog($"WinDurango has been uninstalled from package {_Name}", "Uninstalled");
+                await good.Show();
+            }
             App.MainWindow.ReloadAppList();
         }
 
         private async void PatchPackage(object sender, RoutedEventArgs args)
         {
-            await WinDurangoPatcher.PatchPackage(_package, false, StatusUpdateAsync);
+            var progress = new ProgressDialog($"Patching {_Name}...", $"Patching {_Name}", isIndeterminate: true).GetController();
+            await progress.CreateAsync(async () =>
+            {
+                await WinDurangoPatcher.PatchPackage(_package, false, progress);
+            });
+
+            if (!progress.failed)
+            {
+                NoticeDialog good = new NoticeDialog($"WinDurango has been installed in package {_Name}", "Installed");
+                await good.Show();
+            }
             App.MainWindow.ReloadAppList();
         }
 

@@ -17,40 +17,11 @@ namespace WinDurango.UI
     public sealed partial class MainWindow : Window
     {
         public readonly string AppName = "WinDurango";
-        public static readonly WdSettings Settings = App.Settings;
+        public static readonly UiConfig Settings = App.Settings;
         public AppsListPage AppsListPage;
         public SettingsPage SettingsPage;
         public AboutPage AboutPage;
-
-        // ignore
-        // public async Task StatusUpdateAsync(string status, string title, int progress)
-        // {
-        //     if (currentDialog == null)
-        //     {
-        //         currentDialog = new ProgressDialog(status, title, false);
-        //         // shitty way of doing it
-        //         if (new ProgressDialog(status, title, false) != null)
-        //         {
-        //             await DispatcherQueue.EnqueueAsync(async () =>
-        //             {
-        //                 await currentDialog.ShowAsync();
-        //             });
-        //         } else
-        //         {
-        //             Logger.WriteDebug("???");
-        //         }
-        //     } else
-        //     {
-        //         currentDialog.Text = status;
-        //         currentDialog.Progress = progress;
-        //         if (progress == 100)
-        //         {
-        //             currentDialog.Hide();
-        //             currentDialog = null;
-        //         }
-        //     }
-        // }
-
+        
         private void NavigationInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             if (args.IsSettingsInvoked)
@@ -68,19 +39,12 @@ namespace WinDurango.UI
                 {
                     "AppsListPage" => typeof(AppsListPage),
                     "AboutPage" => typeof(AboutPage),
+                    "NotImplementedPage" => typeof(NotImplementedPage),
                     _ => typeof(AppsListPage)
                 };
 
-                if (contentFrame.Content?.GetType() != pageType)
-                {
-                    if (contentFrame.Navigate(pageType))
-                    {
-                        if (contentFrame.Content is AppsListPage appsList)
-                        {
-                            AppsListPage = appsList;
-                        }
-                    }
-                }
+                if (contentFrame.Content?.GetType() != pageType && contentFrame.Navigate(pageType) && contentFrame.Content is AppsListPage appsList)
+                    AppsListPage = appsList;
             }
         }
 
@@ -91,22 +55,22 @@ namespace WinDurango.UI
 
         public void LoadSettings()
         {
-            ExtendsContentIntoTitleBar = Settings.Settings.Theme != WdSettingsData.ThemeSetting.System;
+            ExtendsContentIntoTitleBar = Settings.Settings.Theme != UiConfigData.ThemeSetting.System;
             switch (Settings.Settings.Theme)
             {
-                case WdSettingsData.ThemeSetting.Mica:
+                case UiConfigData.ThemeSetting.Mica:
                     this.SystemBackdrop = new MicaBackdrop() { Kind = MicaKind.Base };
                     break;
-                case WdSettingsData.ThemeSetting.MicaAlt:
+                case UiConfigData.ThemeSetting.MicaAlt:
                     this.SystemBackdrop = new MicaBackdrop() { Kind = MicaKind.BaseAlt };
                     break;
-                case WdSettingsData.ThemeSetting.Fluent:
+                case UiConfigData.ThemeSetting.Fluent:
                     this.SystemBackdrop = new DesktopAcrylicBackdrop();
                     break;
-                case WdSettingsData.ThemeSetting.FluentThin:
+                case UiConfigData.ThemeSetting.FluentThin:
                     this.SystemBackdrop = new DesktopAcrylicBackdrop();
                     break;
-                case WdSettingsData.ThemeSetting.System:
+                case UiConfigData.ThemeSetting.System:
                     this.SystemBackdrop = null;
                     break;
             }

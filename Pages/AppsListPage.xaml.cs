@@ -85,6 +85,7 @@ namespace WinDurango.UI.Pages
             Logger.WriteDebug("Initialized AppsListPage in {0:D2}:{1:D2}:{2:D2}.{3:D3}", (int)PlatinumWatch.Elapsed.TotalHours, (int)PlatinumWatch.Elapsed.TotalMinutes, (int)PlatinumWatch.Elapsed.TotalSeconds, (int)PlatinumWatch.Elapsed.TotalMilliseconds);
         }
 
+        // needs to be fixed
         private async void InstallButton_Tapped(SplitButton sender, SplitButtonClickEventArgs args)
         {
             var picker = new FolderPicker
@@ -109,7 +110,13 @@ namespace WinDurango.UI.Pages
                     var dialog = new InstallConfirmationDialog(manifest);
                     dialog.PrimaryButtonClick += async (sender, e) =>
                     {
-                        _ = await Packages.InstallPackageAsync(new Uri(manifest, UriKind.Absolute), (bool)addToAppListCheckBox.IsChecked);
+                        dialog.Hide();
+                        var controller = new ProgressDialog("Starting installation...", $"Installing {Packages.GetPropertiesFromManifest(manifest).DisplayName}", isIndeterminate: false).GetController();
+                        controller.CreateAsync(async () =>
+                        {
+                            await Packages.InstallPackageAsync(new Uri(manifest, UriKind.Absolute), controller,
+                                (bool)addToAppListCheckBox.IsChecked);
+                        });
                     };
                     await dialog.ShowAsync();
                 }
@@ -124,7 +131,13 @@ namespace WinDurango.UI.Pages
                             var dialog = new InstallConfirmationDialog(Path.Combine(mountFolder + "\\AppxManifest.xml"));
                             dialog.PrimaryButtonClick += async (sender, e) =>
                             {
-                                await Packages.InstallXPackageAsync(folder.Path.ToString(), autoSymlinkCheckBox.IsEnabled && (bool)autoSymlinkCheckBox.IsChecked ? Packages.XvdMode.CreateSymlinks : Packages.XvdMode.DontUse, (bool)addToAppListCheckBox.IsChecked);
+                                dialog.Hide();
+                                var controller = new ProgressDialog("Starting installation...", "Installing", isIndeterminate: false).GetController();
+                                controller.CreateAsync(async () =>
+                                {
+                                    await Packages.InstallXPackageAsync(folder.Path.ToString(), controller,
+                                        (bool)addToAppListCheckBox.IsChecked);
+                                });
                             };
                             await dialog.ShowAsync();
                         }

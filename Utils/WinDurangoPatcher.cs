@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.IO.Packaging;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Policy;
@@ -12,8 +13,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using WinDurango.UI.Dialogs;
 using WinDurango.UI.Settings;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using Package = Windows.ApplicationModel.Package;
 
 namespace WinDurango.UI.Utils
@@ -28,81 +29,91 @@ namespace WinDurango.UI.Utils
     {
         private static readonly HttpClient httpClient = new(new HttpClientHandler { AllowAutoRedirect = true });
         private static GitHubRelease wdRelease;
-        private static string patchesPath = Path.Combine(App.DataDir, "WinDurangoCore");
 
         static WinDurangoPatcher()
         {
             httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GitHubAPI/1.0)");
         }
 
-        public static async Task<bool> UnpatchPackage(Package package, Func<string, int, Task> statusCallback)
+        public static async Task<bool> UnpatchPackage(Package package, ProgressController controller)
         {
             installedPackage pkg = App.InstalledPackages.GetPackage(package);
             if (pkg == null)
                 return false;
             
-            return await UnpatchPackage(pkg, statusCallback);
+            return await UnpatchPackage(pkg, controller);
         }
         
         public static async Task<bool> PatchPackage(Package package, bool forceRedownload,
-            Func<string, int, Task> statusCallback)
+            ProgressController controller)
         {
             installedPackage pkg = App.InstalledPackages.GetPackage(package);
             if (pkg == null)
                 return false;
             
-            return await PatchPackage(pkg, forceRedownload, statusCallback);
+            return await PatchPackage(pkg, forceRedownload, controller);
         }
         
+        // todo: clean this up
         public static async Task<bool> PatchPackage(installedPackage package, bool forceRedownload,
-            Func<string, int, Task> statusCallback)
+            ProgressController controller)
         {
-            statusCallback($"Patching {package.FamilyName}", 0);
+            string patchesPath = Path.Combine(App.DataDir, "WinDurangoCore");
+            controller?.Update($"Patching {package.FamilyName}", 0);
             string curDate = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
             string installPath = package.InstallPath;
 
-            statusCallback("Getting latest release", 10);
+            controller?.Update("Getting latest release", 10);
             await GetOrReuseRelease(); // don't use the return value since wdRelease is set regardless
+            string dlLink = wdRelease.DownloadLink;
+            string relName = wdRelease.Name;
+            string dlPath = $"WinDurangoCore.zip";
+
+            // see this is quite messy but just needed to get it to work
+            if (App.Settings.Settings.DownloadSource == UiConfigData.PatchSource.Artifact)
+            {
+                dlLink = "https://nightly.link/WinDurango/WinDurango/workflows/msbuild/main/WinDurango-DEBUG.zip";
+                dlPath = $"WinDurangoCore-ARTIFACT.zip";
+                patchesPath = Path.Combine(App.DataDir, "WinDurangoCore-ARTIFACT");
+                relName = $"latest GitHub Actions artifact";
+            }
 
             if (!Path.Exists(patchesPath) || forceRedownload)
             {
                 if (Path.Exists(patchesPath))
                     Directory.Delete(patchesPath, true);
 
-                string archivePath = Path.Combine(App.DataDir, "WinDurangoCore.zip");
+                string archivePath = Path.Combine(App.DataDir, dlPath);
 
                 try
                 {
-                    statusCallback($"Downloading release \"{wdRelease.Name}\"", 20);
+                    controller?.Update($"Downloading WinDurango {relName}", 20);
 
-                    // using HttpResponseMessage res = await httpClient.GetAsync(wdRelease.DownloadLink,
-                    //     HttpCompletionOption.ResponseHeadersRead);
-                    // res.EnsureSuccessStatusCode();
-                    await using Stream httpStream = await httpClient.GetStreamAsync(wdRelease.DownloadLink);
+                    await using Stream httpStream = await httpClient.GetStreamAsync(dlLink);
                     await using FileStream stream = new(archivePath, FileMode.Create, FileAccess.Write, FileShare.None);
-                    statusCallback("Writing release zip", 30);
+                    controller?.Update("Writing release zip", 30);
                     await httpStream.CopyToAsync(stream);
                 }
                 catch (Exception ex)
                 {
-                    Logger.WriteException(ex);
+                    await controller.Fail(ex.Message, "Failed to download/write zip");
                     return false;
                 }
 
                 try
                 {
                     Directory.CreateDirectory(patchesPath);
-                    statusCallback($"Extracting", 40);
+                    controller?.Update($"Extracting", 40);
                     ZipFile.ExtractToDirectory(archivePath, patchesPath);
                 }
                 catch (Exception ex)
                 {
-                    Logger.WriteException(ex);
+                    await controller.Fail(ex.Message, "Failed to extract");
                     return false;
                 }
             }
 
-            statusCallback("Patching", 50);
+            controller?.Update("Extracting", 50);
             if (Path.Exists(patchesPath))
             {
                 DirectoryInfo patchesDir = new(patchesPath);
@@ -115,23 +126,43 @@ namespace WinDurango.UI.Utils
                 {
                     int progress = (int)Math.Round(50 + progressPerFile * Array.IndexOf(patchFiles, file));
 
-                    statusCallback($"Copying {file.Name}", progress);
+                    controller?.Update($"Copying {file.Name}", progress);
                     FileInfo oldFile = packageDir.GetFiles("*.dll").FirstOrDefault(f => f.Name == file.Name);
                     if (oldFile != null)
                     {
                         Logger.WriteInformation($"Backing up old {oldFile.Name}");
-                        string DllBackup = Path.Combine(installPath, "WDDllBackup", curDate);
-                        if (!Path.Exists(DllBackup))
-                            Directory.CreateDirectory(DllBackup);
+                        string dllBackup = Path.Combine(installPath, "WDDllBackup", curDate);
+                        if (!Path.Exists(dllBackup))
+                            Directory.CreateDirectory(dllBackup);
 
-                        File.Move(oldFile.FullName, Path.Combine(DllBackup, oldFile.Name));
-                        if (!package.OriginalDlls.Contains(Path.Combine(DllBackup, oldFile.Name)))
-                            package.OriginalDlls.Add(Path.Combine(DllBackup, oldFile.Name));
+                        try
+                        {
+                            File.Move(oldFile.FullName, Path.Combine(dllBackup, oldFile.Name));
+                        } catch (Exception e)
+                        {
+                            await controller.Fail(e.Message, "Failed to move backed-up file " + oldFile.Name);
+                            return false;
+                        }
+
+                        if (!package.OriginalDlls.Contains(Path.Combine(dllBackup, oldFile.Name)))
+                            package.OriginalDlls.Add(Path.Combine(dllBackup, oldFile.Name));
                     }
 
                     string patchPath = Path.Combine(installPath, file.Name);
+                    if (Path.Exists(Path.Combine(installPath, file.Name)))
+                        File.Delete(Path.Combine(installPath, file.Name));
+
+                    try
+                    {
+                        File.Copy(file.FullName, Path.Combine(installPath, file.Name));
+                    }
+                    catch (Exception e)
+                    {
+                        await controller.Fail(e.Message, "Failed to copy file " + file.Name);
+                        return false;
+                    }
+
                     Logger.WriteInformation($"Added {file.Name}");
-                    File.Copy(file.FullName, Path.Combine(installPath, file.Name));
                     
                     if (!package.PatchedDlls.Contains(patchPath))
                         package.PatchedDlls.Add(patchPath);
@@ -143,25 +174,25 @@ namespace WinDurango.UI.Utils
                 return false;
             }
 
-            statusCallback($"Writing patch txt", 93);
+            controller?.Update($"Writing patch txt", 93);
             StringBuilder builder = new();
-            builder.AppendLine($"# This file was patched by WinDurango.UI with WinDurango release \"{wdRelease.Name}\".");
+            builder.AppendLine($"# This package was patched by WinDurango.UI with WinDurango release \"{relName}\".");
             builder.AppendLine("# If you want to unpatch manually, delete this file and edit %appdata%\\WinDurango\\UI\\InstalledPackages.json and set IsPatched to false.");
             builder.AppendLine("# Format is ReleaseName;VerPacked");
-            builder.AppendLine($"{wdRelease.Name.Replace(";","-")};{App.VerPacked}");
+            builder.AppendLine($"{relName.Replace(";","-")};{App.VerPacked}");
             await File.WriteAllTextAsync(Path.Combine(installPath, "installed.txt"), builder.ToString());
             
-            statusCallback($"Updating package list", 95);
+            controller?.Update($"Updating package list", 95);
             package.IsPatched = true;
             App.InstalledPackages.UpdatePackage(package);
-            statusCallback($"Done!", 100);
+            controller?.Update($"Done!", 100);
             return true;
         }
 
         public static async Task<bool> UnpatchPackage(installedPackage package,
-            Func<string, int, Task> statusCallback)
+            ProgressController controller)
         {
-            statusCallback($"Unpatching {package.FamilyName}", 0);
+            controller?.Update($"Unpatching {package.FamilyName}", 0);
 
             string[] dlls = package.PatchedDlls.ToArray();
             string[] originalDlls = package.OriginalDlls.ToArray();
@@ -172,45 +203,43 @@ namespace WinDurango.UI.Utils
             foreach (string dll in dlls)
             {
                 int progress = (int)Math.Round(50 + progressPerRemove * Array.IndexOf(package.PatchedDlls.ToArray(), dll));
-                statusCallback($"Removing {dll}", progress);
+                controller?.Update($"Removing {dll}", progress);
                 try
                 {
                     File.Delete(dll);
+                    package.PatchedDlls.Remove(dll);
                 }
                 catch
                 {
                     Logger.WriteError($"Failed to delete {dll}.");
                 }
-
-                package.PatchedDlls.Remove(dll);
             };
 
             float progressPerRevert = (98 - 50) / (float)package.OriginalDlls.Count;
             foreach (string dll in originalDlls)
             {
                 int progress = (int)Math.Round(50 + progressPerRevert * Array.IndexOf(originalDlls, dll));
-                statusCallback($"Placing back original DLL \"{dll}\"", progress);
+                controller?.Update($"Placing back original DLL \"{dll}\"", progress);
                 try
                 {
                     File.Copy(dll, Path.Combine(installPath, dll));
+                    package.OriginalDlls.Remove(dll);
                 }
                 catch
                 {
                     Logger.WriteError($"Failed to copy {dll}.");
                 }
-
-                package.OriginalDlls.Remove(dll);
             };
 
             package.IsPatched = false;
 
-            statusCallback($"Removing patched.txt", 99);
+            controller?.Update($"Removing patched.txt", 99);
             if (Path.Exists(Path.Combine(installPath, "installed.txt")))
                 File.Delete(Path.Combine(installPath, "installed.txt"));
             
-            statusCallback($"Updating package list", 99);
+            controller?.Update($"Updating package list", 99);
             App.InstalledPackages.UpdatePackage(package);
-            statusCallback($"Done!", 100);
+            controller?.Update($"Done!", 100);
             return true;
         }
 

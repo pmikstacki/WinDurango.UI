@@ -32,6 +32,9 @@ namespace WinDurango.UI.Dialogs
 
         private void AppListView_Loaded(object sender, RoutedEventArgs e)
         {
+            appListView.MinWidth = Math.Max(App.MainWindow.Bounds.Width / 2, 500);
+            appListView.MaxWidth = Math.Max(App.MainWindow.Bounds.Width / 2, 500);
+
             var listView = (ListView)sender;
 
             foreach (var pkg in Pkgs)
@@ -98,9 +101,8 @@ namespace WinDurango.UI.Dialogs
 
         private void LogoFailed(object sender, ExceptionRoutedEventArgs e)
         {
-            var image = sender as Image;
-            image.Source = new BitmapImage(new Uri("ms-appx:///Assets/testimg.png"));
-            Logger.WriteWarning($"Failed to load logo.");
+            //var image = sender as Image;
+            //image.Source = new BitmapImage(new Uri("ms-appx:///Assets/testimg.png"));
         }
 
         private void AddToAppList(ContentDialog sender, ContentDialogButtonClickEventArgs args)

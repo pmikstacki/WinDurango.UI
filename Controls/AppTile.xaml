@@ -26,13 +26,20 @@
                     <SplitButton.Flyout>
                         <Flyout Placement="Bottom">
                             <StackPanel>
-                                <CheckBox Content="Unregister package" Name="unregisterCheckbox" IsChecked="True"/>
-                                <CheckBox Content="Unpatch package" Name="unpatchCheckbox" IsChecked="True"/>
+                                <CheckBox Content="Unregister" Name="unregisterCheckbox" IsChecked="True"/>
+                                <CheckBox Content="Unpatch" Name="unpatchCheckbox" IsChecked="True"/>
                             </StackPanel>
                         </Flyout>
                     </SplitButton.Flyout>
                 </SplitButton>
-                <Button x:Name="viewFolderButton" Grid.Column="1" Content="View Folder" Margin="10 0 0 0" HorizontalAlignment="Left" Click="OpenFolder"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button x:Name="manageModsButton" Margin="10 0 0 0" HorizontalAlignment="Left" Click="ShowNotImplemented" ToolTipService.ToolTip="Manage mods">
+                        <SymbolIcon Symbol="Manage"></SymbolIcon>
+                    </Button>
+                    <Button x:Name="viewFolderButton" Margin="10 0 0 0" HorizontalAlignment="Left" Click="OpenFolder" ToolTipService.ToolTip="View install folder">
+                        <SymbolIcon Symbol="Folder"></SymbolIcon>
+                    </Button>
+                </StackPanel>
             </Grid>
             <StackPanel Grid.Row="0">
                 <TextBlock x:Name="expanderVersion" Margin="10 0 0 10"/>

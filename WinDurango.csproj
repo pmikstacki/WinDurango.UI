@@ -15,8 +15,8 @@
     <DisableXbfLineInfo>False</DisableXbfLineInfo>
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
 	<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-	<Version>0.1.0</Version>
-	<AssemblyVersion>0.1.0</AssemblyVersion>
+	<Version>0.1.1</Version>
+	<AssemblyVersion>0.1.1</AssemblyVersion>
 	<Product>WinDurango UI</Product>
 	<EnableMsixTooling>true</EnableMsixTooling>
 </PropertyGroup>
@@ -28,6 +28,9 @@
     <None Remove="Theming\**" />
     <Page Remove="Theming\**" />
     <PRIResource Remove="Theming\**" />
+    <Page Update="Controls\LayerUser.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Controls\GameContainer.cs" />
@@ -39,6 +42,7 @@
     <None Remove="Dialogs\InstallConfirmationDialog.xaml" />
     <None Remove="Pages\AboutPage.xaml" />
     <None Remove="Pages\AppsListPage.xaml" />
+    <None Remove="Pages\NotImplementedPage.xaml" />
     <None Remove="Pages\SettingsPage.xaml" />
   </ItemGroup>
 
@@ -84,6 +88,7 @@
     <PackageReference Include="System.DirectoryServices" Version="8.0.0" />
     <PackageReference Include="System.DirectoryServices.AccountManagement" Version="8.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.8" />
+    <PackageReference Include="Tomlyn" Version="0.18.0" />
     <PackageReference Include="WinUI3Localizer" Version="2.2.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
@@ -143,6 +148,16 @@
 
   <ItemGroup>
     <Page Update="Dialogs\AppListDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Pages\Settings\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Pages\NotImplementedPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

@@ -15,7 +15,8 @@ namespace WinDurango.UI
     public partial class App : Application
     {
         // constants
-        public static readonly string DataDir = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinDurango"), "UI");
+        public static readonly string CoreDataDir = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinDurango"));
+        public static readonly string DataDir = Path.Combine(CoreDataDir, "UI");
         public static readonly string AppDir = AppContext.BaseDirectory;
         private static readonly FileVersionInfo Fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
         // versioning
@@ -29,7 +30,8 @@ namespace WinDurango.UI
         public static readonly string Version = $"{Fvi.ProductMajorPart}.{Fvi.ProductMinorPart}.{Fvi.ProductBuildPart}_{Hash}"; // 1.0 will be when bugs are squashed and everything works correctly.
         // other
         public static readonly InstalledPackages InstalledPackages = new InstalledPackages();
-        public static readonly WdSettings Settings = new();
+        public static readonly UiConfig Settings = new();
+        public static readonly CoreConfig CoreSettings = new();
         public static readonly MainWindow MainWindow = new();
 
         public static (uint major, uint minor, uint patch) UnpackVersion(uint verPacked)

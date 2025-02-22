@@ -16,6 +16,14 @@ namespace WinDurango.UI.Utils
 {
     // do not touch or you will combust from all the glue holding this together
     // this class sucks so much that we literally had to stop bc we didn't know how to rewrite a function and make it still work with the UI stuff
+    #nullable enable
+    public class ManifestInfo
+    {
+        public string? DisplayName { get; set; }
+        public string? PublisherDisplayName { get; set; }
+        public string? Logo { get; set; }
+        public string? Description { get; set; }
+    }
     public abstract class Packages
     {
         // TODO: Make these methods not use the GUI, instead just throw an exception and catch it in the area where the method is actually invoked.
@@ -27,10 +35,12 @@ namespace WinDurango.UI.Utils
             return pm.FindPackagesForUser(sid);
         }
 
-        public static (string? DisplayName, string? PublisherDisplayName, string? Logo, string? Description) GetPropertiesFromManifest(string manifestPath)
+        public static ManifestInfo GetPropertiesFromManifest(string manifestPath)
         {
+            ManifestInfo manifestInfo = new();
+            
             if (!File.Exists(manifestPath))
-                return (null, null, null, null);
+                return manifestInfo;
 
             string manifest;
             using (var stream = File.OpenRead(manifestPath))
@@ -40,31 +50,20 @@ namespace WinDurango.UI.Utils
             }
 
             XDocument doc = XDocument.Parse(manifest);
-            XElement package = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Package");
-            if (package == null) return (null, null, null, null);
+            XElement? package = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Package");
 
-            XElement properties = package.Descendants().FirstOrDefault(e => e.Name.LocalName == "Properties");
-            if (properties == null) return (null, null, null, null);
+            XElement? properties = package?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Properties");
 
-            string logo = properties?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Logo").Value ?? null;
-            string displayName = properties?.Descendants().FirstOrDefault(e => e.Name.LocalName == "DisplayName").Value ?? null;
-            string publisherDisplayName = properties?.Descendants().FirstOrDefault(e => e.Name.LocalName == "PublisherDisplayName").Value ?? null;
-            string description = properties?.Descendants()?.FirstOrDefault(e => e.Name.LocalName == "Description")?.Value ?? null;
-            return (displayName, publisherDisplayName, logo, description);
+            manifestInfo.Logo = properties?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Logo")?.Value;
+            manifestInfo.DisplayName = properties?.Descendants().FirstOrDefault(e => e.Name.LocalName == "DisplayName")?.Value;
+            manifestInfo.PublisherDisplayName = properties?.Descendants().FirstOrDefault(e => e.Name.LocalName == "PublisherDisplayName")?.Value;
+            manifestInfo.Description = properties?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Description")?.Value;
+            return manifestInfo;
         }
 
-        public enum XvdMode
-        {
-            CreateSymlinks,
-            DontUse
-        };
-
-        public static async Task InstallXPackageAsync(string dir, XvdMode mode = XvdMode.CreateSymlinks, bool addInstalledPackage = true)
+        public static async Task InstallXPackageAsync(string dir, ProgressController controller, bool addInstalledPackage = true)
         {
             string mountDir = Path.Combine(dir, "Mount");
-            string exvdDir = Path.Combine(dir, "EmbeddedXvd");
-
-            bool hasExvd = Directory.Exists(exvdDir);
 
             if (!Directory.Exists(mountDir))
             {
@@ -72,7 +71,7 @@ namespace WinDurango.UI.Utils
                 return;
             }
 
-            string package = await InstallPackageAsync(new Uri(mountDir + "\\AppxManifest.xml", UriKind.Absolute), addInstalledPackage);
+            await InstallPackageAsync(new Uri(mountDir + "\\AppxManifest.xml", UriKind.Absolute), controller, addInstalledPackage);
         }
 
         public static string GetSplashScreenPath(Package pkg)
@@ -120,120 +119,103 @@ namespace WinDurango.UI.Utils
         }
 
 
-        public static async Task<string> InstallPackageAsync(Uri appxManifestUri, bool addInstalledPackage = true)
+        public static async Task<string> InstallPackageAsync(Uri appxManifestUri, ProgressController controller, bool addInstalledPackage = true)
         {
             string manifestPath = Uri.UnescapeDataString(appxManifestUri.AbsolutePath);
 
-            // TODO: strip UI
             if (!File.Exists(manifestPath))
             {
-                await new NoticeDialog(GetLocalizedText("Error.NotFound", manifestPath), "Error").Show();
-                return null;
+                throw new Exception(GetLocalizedText("Error.NotFound", manifestPath));
             }
 
-
             Logger.WriteInformation($"Installing package \"{manifestPath}\"...");
-            var status = new ProgressDialog(GetLocalizedText("Packages.InstallingPackage", "Package..."), "Installing", false);
-            _ = App.MainWindow.DispatcherQueue.TryEnqueue(async () => await status.ShowAsync());
             PackageManager pm = new();
             try
             {
                 Logger.WriteInformation($"Reading manifest...");
-                status.Text = "Packages.ReadingManifest".GetLocalizedString();
+                controller?.UpdateText("Packages.ReadingManifest".GetLocalizedString());
                 string manifest;
                 await using (var stream = File.OpenRead(manifestPath))
                 {
-                    var reader = new StreamReader(stream);
+                    StreamReader reader = new StreamReader(stream);
                     manifest = await reader.ReadToEndAsync();
                 }
 
                 XDocument doc = XDocument.Parse(manifest);
-                XElement package = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Package");
-                XElement identity = package?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Identity");
+                XElement? package = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Package");
+                XElement? identity = package?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Identity");
 
-                string pkgName = identity.Attribute("Name")?.Value;
-                string pkgPublisher = identity.Attribute("Publisher")?.Value;
+                string? pkgName = identity?.Attribute("Name")?.Value;
+                string? pkgPublisher = identity?.Attribute("Publisher")?.Value;
 
-                status.Progress = 20.0;
-                status.Text = GetLocalizedText("CheckingInstallStatus", pkgName);
-                var sid = WindowsIdentity.GetCurrent().User?.Value;
-                var installedPackages = await Task.Run(() => pm.FindPackagesForUser(sid, pkgName, pkgPublisher));
+                controller?.UpdateProgress(20.0);
+                controller?.UpdateText(GetLocalizedText("CheckingInstallStatus", pkgName));
+                string? sid = WindowsIdentity.GetCurrent().User?.Value;
+                IEnumerable<Package>? installedPackages = await Task.Run(() => pm.FindPackagesForUser(sid, pkgName, pkgPublisher));
 
                 if (installedPackages.Any())
                 {
-                    status.Hide();
                     Logger.WriteError($"{pkgName} is already installed.");
-                    await new NoticeDialog(GetLocalizedText("Error.AlreadyInstalled", pkgName), "Error").Show();
-                    return null;
+                    throw new Exception(GetLocalizedText("Error.AlreadyInstalled", pkgName));
                 }
 
 
-                status.Progress = 40.0;
-                status.Text = GetLocalizedText("Packages.InstallingPackage", pkgName);
+                controller?.UpdateProgress(40.0);
+                controller?.UpdateText(GetLocalizedText("Packages.InstallingPackage", pkgName));
                 Logger.WriteInformation($"Registering...");
-                var deployment = await pm.RegisterPackageAsync(appxManifestUri, null, DeploymentOptions.DevelopmentMode);
+                await pm.RegisterPackageAsync(appxManifestUri, null, DeploymentOptions.DevelopmentMode);
 
-                status.Progress = 60.0;
+                controller?.UpdateProgress(60.0);
 
-                status.Text = "Packages.GettingAppInfo".GetLocalizedString();
-                var recentPkg = GetMostRecentlyInstalledPackage();
+                controller?.UpdateText("Packages.GettingAppInfo".GetLocalizedString());
+                Package recentPkg = GetMostRecentlyInstalledPackage();
 
                 if (addInstalledPackage)
                 {
-                    status.Text = $"Ui.UpdatingAppList".GetLocalizedString();
-                    status.Progress = 80.0;
+                    controller?.UpdateText($"Ui.UpdatingAppList".GetLocalizedString());
+                    controller?.UpdateProgress(80.0);
                     App.InstalledPackages.AddPackage(recentPkg);
-                    status.Progress = 90.0;
+                    controller?.UpdateProgress(90.0);
                     App.MainWindow.ReloadAppList();
-                    status.Progress = 100.0;
+                    controller?.UpdateProgress(100.0);
                 }
                 else
                 {
-                    status.Progress = 100.0;
+                    controller?.UpdateProgress(100.0);
                 }
 
-                status.Hide();
                 Logger.WriteInformation($"{recentPkg.Id.Name} was installed.");
-                await new NoticeDialog(GetLocalizedText("Packages.PackageInstalled", recentPkg.Id.Name)).Show();
                 return recentPkg.Id.FamilyName;
             }
             catch (Exception e)
             {
                 // we're fucked :(
-                status.Hide();
                 Logger.WriteError($"{appxManifestUri} failed to install");
                 Logger.WriteException(e);
-                await new NoticeDialog(GetLocalizedText("Packages.Error.PackageInstallFailedEx", appxManifestUri, e.Message), "Error").Show();
-                return null;
+                throw new Exception(
+                    GetLocalizedText("Packages.Error.PackageInstallFailedEx", appxManifestUri, e.Message), e);
             }
         }
 
-        public static async Task RemovePackage(Package package)
+        public static async Task RemovePackage(Package package, ProgressController controller)
         {
             Logger.WriteError($"Uninstalling {package.DisplayName}...");
-            var status = new ProgressDialog(GetLocalizedText("Packages.UninstallingPackage", package.DisplayName), "Uninstalling", false);
-            _ = App.MainWindow.DispatcherQueue.TryEnqueue(async () => await status.ShowAsync());
             PackageManager pm = new();
             try
             {
                 var undeployment = await pm.RemovePackageAsync(package.Id.FullName, RemovalOptions.PreserveApplicationData);
 
-                status.Progress = 50.0;
+                controller.UpdateProgress(50.0);
                 App.InstalledPackages.RemovePackage(package);
-                status.Progress = 100.0;
-                status.Hide();
-                Logger.WriteInformation($"{package.DisplayName} was uninstalled.");
-                await new NoticeDialog(GetLocalizedText("Packages.PackageUninstalled", package.DisplayName)).Show();
+                controller.UpdateProgress(100.0);
                 App.MainWindow.ReloadAppList();
             }
             catch (Exception ex)
             {
-                status.Hide();
                 Logger.WriteError($"{package.DisplayName} failed to uninstall");
                 Logger.WriteException(ex);
-                await new NoticeDialog(GetLocalizedText("Packages.Error.PackageUninstallFailedEx", package.DisplayName, ex.Message), "Error!").Show();
+                throw new Exception(GetLocalizedText("Packages.Error.PackageUninstallFailedEx", package.DisplayName, ex.Message), ex);
             }
-            return;
         }
 
         public static Package GetPackageByFamilyName(string familyName)

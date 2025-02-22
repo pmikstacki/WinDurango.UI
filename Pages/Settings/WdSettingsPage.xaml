@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WinDurango.UI.Pages.Settings.WdSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinDurango.UI.Pages.Settings"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    BorderThickness="0">
+
+    <ScrollViewer>
+        <StackPanel>
+            <TextBlock Margin="0 5 0 5" Text="Layer Settings" FontSize="16" FontWeight="Bold"/>
+            <TextBlock Margin="0 5 0 5" Text="Users (UI UNFINISHED)" FontSize="16" FontWeight="Bold"/>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
+                <StackPanel x:Name="LayerUser" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" CornerRadius="12"></StackPanel>
+                <StackPanel Orientation="Horizontal"  Grid.Row="1">
+                <ComboBox x:Name="SelectUser" SelectionChanged="OnUserSelect"></ComboBox>
+                <Button Name="saveUsers" Content="Save" Click="SaveUsers"></Button>
+                </StackPanel>
+            </Grid> 
+            <TextBlock Margin="0 5 0 5" Text="Debug" FontSize="16" FontWeight="Bold"/>
+            <ToggleSwitch OnContent="Enable console" OffContent="Enable console" Toggled="OnToggleSetting" Tag="EnableConsole" Name="ConsoleToggle"/>
+            <ToggleSwitch OnContent="Enable debug logging" OffContent="Enable debug logging"  Toggled="OnToggleSetting" Tag="DebugLogging" Name="DebugLogToggle"/>
+            <ToggleSwitch OnContent="Log to a file" OffContent="Log to a file"  Toggled="OnToggleSetting" Tag="LogToFile" Name="FileLogToggle"/>
+            <Button Name="appdataButton" Margin="0 5 0 5" Click="OpenAppData">Open WinDurango AppData folder</Button>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

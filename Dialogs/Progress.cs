@@ -1,5 +1,7 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
 
 namespace WinDurango.UI.Dialogs
 {
@@ -11,9 +13,11 @@ namespace WinDurango.UI.Dialogs
         private bool _isIndeterminate;
         private ProgressBar _progressBar;
         private TextBlock _textBlock;
+        private readonly ProgressController _controller;
 
         public ProgressDialog(string content, string title = "Information", bool isIndeterminate = true)
         {
+            _controller = new ProgressController(this);
             _text = content;
             _title = title;
             _isIndeterminate = isIndeterminate;
@@ -24,24 +28,42 @@ namespace WinDurango.UI.Dialogs
                 Width = 300,
                 Value = _progress
             };
-
+            
             _textBlock = new TextBlock
             {
                 Text = _text,
                 Margin = new Thickness(0, 10, 0, 0)
             };
 
-            Content = new StackPanel
+            Content = new Grid
             {
+                RowDefinitions =
+                {
+                        new RowDefinition { Height = GridLength.Auto },
+                        new RowDefinition { Height = new GridLength(1, GridUnitType.Star) },
+                        new RowDefinition { Height = GridLength.Auto }
+                },
                 Children =
                 {
-                    _progressBar,
-                    _textBlock
-                },
-                XamlRoot = App.MainWindow.Content.XamlRoot
+                    _textBlock,
+                    _progressBar
+                }
             };
+            
+            Grid.SetRow(_progressBar, 2);
             Title = _title;
             XamlRoot = App.MainWindow.Content.XamlRoot;
+        }
+
+        public ProgressController GetController() { return _controller; }
+
+        public string PTitle
+        {
+            get => _title;
+            set
+            {
+                _title = value;
+            }
         }
 
         public string Text
@@ -50,7 +72,7 @@ namespace WinDurango.UI.Dialogs
             set
             {
                 _text = value;
-                UpdateDialog();
+                _textBlock.Text = value;
             }
         }
 
@@ -59,21 +81,10 @@ namespace WinDurango.UI.Dialogs
             get => _progress;
             set
             {
+                if (_isIndeterminate)
+                    _isIndeterminate = false;
                 _progress = value;
-                UpdateDialog();
-            }
-        }
-
-        private void UpdateDialog()
-        {
-            if (_textBlock != null)
-            {
-                _textBlock.Text = _text;
-            }
-
-            if (_progressBar != null)
-            {
-                _progressBar.Value = _progress;
+                _progressBar.Value = value;
             }
         }
     }

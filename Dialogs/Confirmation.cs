@@ -69,6 +69,7 @@ namespace WinDurango.UI.Dialogs
 
         public void Remove()
         {
+            _confirmationDialog.Hide();
             _confirmationDialog = null;
         }
     }
