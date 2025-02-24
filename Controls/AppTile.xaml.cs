@@ -31,7 +31,7 @@ namespace WinDurango.UI.Controls
             if ((bool)unregisterCheckbox.IsChecked)
             {
                 var confirmation =
-                    new Confirmation(Localization.Locale.GetLocalizedText("Packages.UninstallConfirmation", _Name),
+                    new Confirmation(Localization.Locale.GetLocalizedText("/Packages/UninstallConfirmation", _Name),
                         "Uninstall?");
                 Dialog.BtnClicked answer = await confirmation.Show();
 

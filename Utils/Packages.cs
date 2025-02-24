@@ -67,7 +67,7 @@ namespace WinDurango.UI.Utils
 
             if (!Directory.Exists(mountDir))
             {
-                await new NoticeDialog(GetLocalizedText($"Error.mountNotFound", mountDir), "Error").Show();
+                await new NoticeDialog(GetLocalizedText($"/Errors/NotFound", mountDir), "Error").Show();
                 return;
             }
 
@@ -126,7 +126,7 @@ namespace WinDurango.UI.Utils
 
             if (!File.Exists(manifestPath))
             {
-                throw new Exception(GetLocalizedText("Error.NotFound", manifestPath));
+                throw new Exception(GetLocalizedText("/Errors/NotFound", manifestPath));
             }
 
             Logger.WriteInformation($"Installing package \"{manifestPath}\"...");
@@ -150,19 +150,19 @@ namespace WinDurango.UI.Utils
                 string? pkgPublisher = identity?.Attribute("Publisher")?.Value;
 
                 controller?.UpdateProgress(20.0);
-                controller?.UpdateText(GetLocalizedText("CheckingInstallStatus", pkgName));
+                controller?.UpdateText(GetLocalizedText("/Ui/CheckingInstallStatus", pkgName));
                 string? sid = WindowsIdentity.GetCurrent().User?.Value;
                 IEnumerable<Package>? installedPackages = await Task.Run(() => pm.FindPackagesForUser(sid, pkgName, pkgPublisher));
 
                 if (installedPackages.Any())
                 {
                     Logger.WriteError($"{pkgName} is already installed.");
-                    throw new Exception(GetLocalizedText("Error.AlreadyInstalled", pkgName));
+                    throw new Exception(GetLocalizedText("/Errors/AlreadyInstalled", pkgName));
                 }
 
 
                 controller?.UpdateProgress(40.0);
-                controller?.UpdateText(GetLocalizedText("Packages.InstallingPackage", pkgName));
+                controller?.UpdateText(GetLocalizedText("/Packages/InstallingPackage", pkgName));
                 Logger.WriteInformation($"Registering...");
                 await pm.RegisterPackageAsync(appxManifestUri, null, DeploymentOptions.DevelopmentMode);
 
@@ -194,7 +194,7 @@ namespace WinDurango.UI.Utils
                 Logger.WriteError($"{appxManifestUri} failed to install");
                 Logger.WriteException(e);
                 throw new Exception(
-                    GetLocalizedText("Packages.Error.PackageInstallFailedEx", appxManifestUri, e.Message), e);
+                    GetLocalizedText("/Packages/PackageInstallFailedEx", appxManifestUri, e.Message), e);
             }
         }
 
@@ -215,7 +215,7 @@ namespace WinDurango.UI.Utils
             {
                 Logger.WriteError($"{package.DisplayName} failed to uninstall");
                 Logger.WriteException(ex);
-                throw new Exception(GetLocalizedText("Packages.Error.PackageUninstallFailedEx", package.DisplayName, ex.Message), ex);
+                throw new Exception(GetLocalizedText("/Packages/PackageUninstallFailedEx", package.DisplayName, ex.Message), ex);
             }
         }
 

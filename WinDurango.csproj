@@ -181,4 +181,16 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+
+  <ItemGroup>
+    <PRIResource Remove="Strings\en-US\Packages.resw" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PRIResource Remove="Strings\en-US\Errors.resw" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PRIResource Remove="Strings\en-US\Ui.resw" />
+  </ItemGroup>
 </Project>

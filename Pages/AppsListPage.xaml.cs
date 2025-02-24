@@ -142,13 +142,13 @@ namespace WinDurango.UI.Pages
                         {
                             // there is no AppxManifest inside.
                             Logger.WriteError($"Could not find AppxManifest.xml in {folder.Path} and {mountFolder}");
-                            await new NoticeDialog(GetLocalizedText("Packages.Error.ManifestNotFoundMulti", folder.Path, mountFolder), "Error").Show();
+                            await new NoticeDialog(GetLocalizedText("/Packages/ManifestNotFoundMulti", folder.Path, mountFolder), "Error").Show();
                         }
                     }
                     else
                     {
                         Logger.WriteError($"Could not find AppxManifest.xml in {folder.Path} and no Mount folder exists");
-                        await new NoticeDialog(GetLocalizedText("Packages.Error.ManifestNotFoundNoMount", folder.Path), "Error").Show();
+                        await new NoticeDialog(GetLocalizedText("/Packages/ManifestNotFoundNoMount", folder.Path), "Error").Show();
                     }
 
                     return;
