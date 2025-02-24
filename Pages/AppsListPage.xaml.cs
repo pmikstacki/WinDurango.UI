@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using Windows.Management.Deployment;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -19,21 +20,26 @@ namespace WinDurango.UI.Pages
 {
     public sealed partial class AppsListPage : Page
     {
-        public void InitAppList()
+        public async Task InitAppListAsync()
         {
             appList.Children.Clear();
 
-            List<installedPackage> installedPackages = App.InstalledPackages.GetPackages();
-            var pm = new PackageManager();
+            List<installedPackage> installedPackages = await Task.Run(() => App.InstalledPackages.GetPackages());
+            PackageManager pm = new();
 
-            foreach (var installedPackage in installedPackages)
+            foreach (installedPackage installedPackage in installedPackages)
             {
                 if (pm.FindPackageForUser(WindowsIdentity.GetCurrent().User?.Value, installedPackage.FullName) != null)
                 {
                     Grid outerGrid = new();
                     AppTile gameContainer = new(installedPackage.FamilyName);
-                    outerGrid.Children.Add(gameContainer);
-                    appList.Children.Add(outerGrid);
+
+                    this.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        outerGrid.Children.Add(gameContainer);
+                        appList.Children.Add(outerGrid);
+                    });
+        
                     Logger.WriteDebug($"Added {installedPackage.FamilyName} to the app list");
                 }
                 else
@@ -70,16 +76,16 @@ namespace WinDurango.UI.Pages
         public AppsListPage()
         {
             InitializeComponent();
+            _ = InitAppListAsync();
 
+            // All this is useless now basically... because InitAppListAsync now runs asynchronously (not blocking the ui thread)
+            /*
             Stopwatch PlatinumWatch = new Stopwatch();
-
             Logger.WriteDebug("Initializing AppsListPage...");
-
             PlatinumWatch.Start();
-            InitAppList();
             PlatinumWatch.Stop();
-
             Logger.WriteDebug("Initialized AppsListPage in {0:D2}:{1:D2}:{2:D2}.{3:D3}", (int)PlatinumWatch.Elapsed.TotalHours, (int)PlatinumWatch.Elapsed.TotalMinutes, (int)PlatinumWatch.Elapsed.TotalSeconds, (int)PlatinumWatch.Elapsed.TotalMilliseconds);
+            */
         }
 
         // needs to be fixed

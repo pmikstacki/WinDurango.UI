@@ -114,7 +114,7 @@ namespace WinDurango.UI.Dialogs
                 }
             }
 
-            App.MainWindow.AppsListPage.InitAppList();
+            _ = App.MainWindow.AppsListPage.InitAppListAsync();
         }
 
         private void hideDialog(ContentDialog sender, ContentDialogButtonClickEventArgs args)
