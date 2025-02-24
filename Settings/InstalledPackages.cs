@@ -39,7 +39,7 @@ namespace WinDurango.UI.Settings
             if (!File.Exists(filePath))
             {
                 Logger.WriteInformation("Creating empty InstalledPackages.json");
-                File.WriteAllText(filePath, "{}");
+                File.WriteAllText(filePath, "[]");
                 _installedPackages = [];
             }
             else
