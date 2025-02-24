@@ -10,7 +10,7 @@ namespace WinDurango.UI.Dialogs
         private string _title;
         private ContentDialog _confirmationDialog;
 
-        public Confirmation(string content, string title = "Information")
+        public Confirmation(string content, string title = "Confirmation")
         {
             _content = content;
             _title = title;

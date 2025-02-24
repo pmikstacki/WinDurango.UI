@@ -39,7 +39,7 @@ namespace WinDurango.UI.Settings
             writer.WriteEndObject();
         }
     }
-    
+
     public class CoreConfigData
     {
         public class User
@@ -53,7 +53,7 @@ namespace WinDurango.UI.Settings
             public GamepadButtons? ControllerBind { get; set; }
             public Key? KeyBind { get; set; }
         }
-    
+
         public string Version { get; set; } = "unset"; // to be set by core if for some reason the config already exists
         public bool EnableConsole { get; set; } = false;
         public bool DebugLogging { get; set; } = false;
@@ -62,7 +62,7 @@ namespace WinDurango.UI.Settings
             Enum.GetValues(typeof(GamepadButtons))
                 .Cast<GamepadButtons>()
                 .ToDictionary(button => button, button => Key.None);
-    
+
         public List<User> Users { get; set; } = [
             new User() {
                 Name = "durangler",
@@ -80,11 +80,11 @@ namespace WinDurango.UI.Settings
                 Name = "durangled2",
                 Id = 3
             },
-    
+
         ];
-    
+
     }
-    
+
     public class CoreConfig : IConfig
     {
         private readonly string _settingsFile = Path.Combine(App.CoreDataDir, "settings.json");
@@ -93,7 +93,7 @@ namespace WinDurango.UI.Settings
         public CoreConfig()
         {
             Settings = new CoreConfigData();
-            
+
             if (!Directory.Exists(App.DataDir))
                 Directory.CreateDirectory(App.DataDir);
 
@@ -104,7 +104,8 @@ namespace WinDurango.UI.Settings
                 return;
             }
 
-            try {
+            try
+            {
                 string json = File.ReadAllText(_settingsFile);
                 Settings = JsonSerializer.Deserialize<CoreConfigData>(json);
 
@@ -144,7 +145,7 @@ namespace WinDurango.UI.Settings
             try
             {
                 Logger.WriteInformation($"Saving core settings...");
-                JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true, Converters = { new BindingsConverter() }};
+                JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true, Converters = { new BindingsConverter() } };
                 File.WriteAllText(_settingsFile, JsonSerializer.Serialize(Settings, options));
             }
             catch (Exception ex)

@@ -1,11 +1,5 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Windows.Controls.Primitives;
-using WinDurango.UI.Settings;
-using WinDurango.UI.Utils;
 using WinDurango.UI.Pages.Settings;
 
 namespace WinDurango.UI.Pages
@@ -13,7 +7,7 @@ namespace WinDurango.UI.Pages
     public sealed partial class SettingsPage : Page
     {
         // should probably merge these into one?
-        
+
         private void NavigationInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             if (args.InvokedItemContainer is not NavigationViewItem item)

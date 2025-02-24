@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Windows.UI.Text.Core;
 using WinDurango.UI.Utils;
 
 namespace WinDurango.UI.Dialogs
@@ -50,7 +49,7 @@ namespace WinDurango.UI.Dialogs
                 NoticeDialog oops = new NoticeDialog(title, reason);
                 await oops.Show();
             });
-            }
+        }
 
         public async Task Fail(string title, Exception ex)
         {
@@ -64,56 +63,57 @@ namespace WinDurango.UI.Dialogs
             });
         }
 
-        public bool failed {
+        public bool failed
+        {
             get => hasFailed;
         }
 
         public void Close()
+        {
+            _dialog.DispatcherQueue.TryEnqueue(() =>
             {
-                _dialog.DispatcherQueue.TryEnqueue(() =>
-                {
-                    _dialog.Hide();
-                });
-            }
-            
-            public void Show()
-            {
-                _dialog.DispatcherQueue.TryEnqueue(() =>
-                {
-                    _dialog.ShowAsync();
-                });
-            }
+                _dialog.Hide();
+            });
+        }
 
-            public async Task Create(Action action)
+        public void Show()
+        {
+            _dialog.DispatcherQueue.TryEnqueue(() =>
             {
                 _dialog.ShowAsync();
-                try
-                {
-                    action();
-                    _dialog.Hide();
-                }
-                catch (Exception ex)
-                {
-                    _dialog.Hide();
-                    NoticeDialog oops = new NoticeDialog(ex.Message, "Error");
-                    await oops.Show();
-                }
-            }
+            });
+        }
 
-            public async Task CreateAsync(Func<Task> action)
+        public async Task Create(Action action)
+        {
+            _dialog.ShowAsync();
+            try
             {
-                _dialog.ShowAsync();
-                try
-                {
-                    await action();
-                    _dialog.Hide();
-                }
-                catch (Exception ex)
-                {
-                    _dialog.Hide();
-                    NoticeDialog oops = new NoticeDialog(ex.Message, "Error");
-                    await oops.Show();
-                }
+                action();
+                _dialog.Hide();
             }
+            catch (Exception ex)
+            {
+                _dialog.Hide();
+                NoticeDialog oops = new NoticeDialog(ex.Message, "Error");
+                await oops.Show();
+            }
+        }
+
+        public async Task CreateAsync(Func<Task> action)
+        {
+            _dialog.ShowAsync();
+            try
+            {
+                await action();
+                _dialog.Hide();
+            }
+            catch (Exception ex)
+            {
+                _dialog.Hide();
+                NoticeDialog oops = new NoticeDialog(ex.Message, "Error");
+                await oops.Show();
+            }
+        }
     }
 }

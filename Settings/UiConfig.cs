@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading.Tasks;
-using WinDurango.UI.Dialogs;
 using WinDurango.UI.Utils;
 
 namespace WinDurango.UI.Settings;
@@ -37,6 +33,7 @@ public class UiConfigData
     public PatchSource DownloadSource { get; set; } = PatchSource.Release;
 }
 
+// TODO: fix type init exception
 public class UiConfig : IConfig
 {
     private readonly string _settingsFile = Path.Combine(App.DataDir, "settings.json");
@@ -52,26 +49,27 @@ public class UiConfig : IConfig
         {
             Logger.WriteWarning($"Settings file doesn't exist");
             Generate();
-        }         
+        }
 
-        try {
-                string json = File.ReadAllText(_settingsFile);
-                UiConfigData loadedSettings = JsonSerializer.Deserialize<UiConfigData>(json);
+        try
+        {
+            string json = File.ReadAllText(_settingsFile);
+            UiConfigData loadedSettings = JsonSerializer.Deserialize<UiConfigData>(json);
 
-                if (loadedSettings == null)
-                {
-                    Logger.WriteWarning("loadedSettings is null... wtf?");
-                    return;
-                }
+            if (loadedSettings == null)
+            {
+                Logger.WriteWarning("loadedSettings is null... wtf?");
+                return;
+            }
 
-                if (loadedSettings.SaveVersion > App.VerPacked)
-                {
-                    Reset();
-                    Logger.WriteInformation($"Settings were reset due to the settings file version being too new. ({loadedSettings.SaveVersion})");
-                }
-                
-                loadedSettings = JsonSerializer.Deserialize<UiConfigData>(json);
-                Settings = loadedSettings;
+            if (loadedSettings.SaveVersion > App.VerPacked)
+            {
+                Reset();
+                Logger.WriteInformation($"Settings were reset due to the settings file version being too new. ({loadedSettings.SaveVersion})");
+            }
+
+            loadedSettings = JsonSerializer.Deserialize<UiConfigData>(json);
+            Settings = loadedSettings;
         }
         catch (Exception ex)
         {

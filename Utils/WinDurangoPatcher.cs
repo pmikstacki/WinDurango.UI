@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.IO.Packaging;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
-using System.Security.Policy;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Windows.ApplicationModel;
 using WinDurango.UI.Dialogs;
 using WinDurango.UI.Settings;
 using Package = Windows.ApplicationModel.Package;
@@ -25,6 +18,7 @@ namespace WinDurango.UI.Utils
         public string DownloadLink { get; set; }
     }
 
+    // yes it's the wrong term but it sounds good to my head
     public static class WinDurangoPatcher
     {
         private static readonly HttpClient httpClient = new(new HttpClientHandler { AllowAutoRedirect = true });
@@ -40,20 +34,20 @@ namespace WinDurango.UI.Utils
             installedPackage pkg = App.InstalledPackages.GetPackage(package);
             if (pkg == null)
                 return false;
-            
+
             return await UnpatchPackage(pkg, controller);
         }
-        
+
         public static async Task<bool> PatchPackage(Package package, bool forceRedownload,
             ProgressController controller)
         {
             installedPackage pkg = App.InstalledPackages.GetPackage(package);
             if (pkg == null)
                 return false;
-            
+
             return await PatchPackage(pkg, forceRedownload, controller);
         }
-        
+
         // todo: clean this up
         public static async Task<bool> PatchPackage(installedPackage package, bool forceRedownload,
             ProgressController controller)
@@ -92,6 +86,7 @@ namespace WinDurango.UI.Utils
                     await using Stream httpStream = await httpClient.GetStreamAsync(dlLink);
                     await using FileStream stream = new(archivePath, FileMode.Create, FileAccess.Write, FileShare.None);
                     controller?.Update("Writing release zip", 30);
+                    // why so slow?
                     await httpStream.CopyToAsync(stream);
                 }
                 catch (Exception ex)
@@ -138,7 +133,8 @@ namespace WinDurango.UI.Utils
                         try
                         {
                             File.Move(oldFile.FullName, Path.Combine(dllBackup, oldFile.Name));
-                        } catch (Exception e)
+                        }
+                        catch (Exception e)
                         {
                             await controller.Fail(e.Message, "Failed to move backed-up file " + oldFile.Name);
                             return false;
@@ -163,7 +159,7 @@ namespace WinDurango.UI.Utils
                     }
 
                     Logger.WriteInformation($"Added {file.Name}");
-                    
+
                     if (!package.PatchedDlls.Contains(patchPath))
                         package.PatchedDlls.Add(patchPath);
                 }
@@ -179,9 +175,9 @@ namespace WinDurango.UI.Utils
             builder.AppendLine($"# This package was patched by WinDurango.UI with WinDurango release \"{relName}\".");
             builder.AppendLine("# If you want to unpatch manually, delete this file and edit %appdata%\\WinDurango\\UI\\InstalledPackages.json and set IsPatched to false.");
             builder.AppendLine("# Format is ReleaseName;VerPacked");
-            builder.AppendLine($"{relName.Replace(";","-")};{App.VerPacked}");
+            builder.AppendLine($"{relName.Replace(";", "-")};{App.VerPacked}");
             await File.WriteAllTextAsync(Path.Combine(installPath, "installed.txt"), builder.ToString());
-            
+
             controller?.Update($"Updating package list", 95);
             package.IsPatched = true;
             App.InstalledPackages.UpdatePackage(package);
@@ -236,7 +232,7 @@ namespace WinDurango.UI.Utils
             controller?.Update($"Removing patched.txt", 99);
             if (Path.Exists(Path.Combine(installPath, "installed.txt")))
                 File.Delete(Path.Combine(installPath, "installed.txt"));
-            
+
             controller?.Update($"Updating package list", 99);
             App.InstalledPackages.UpdatePackage(package);
             controller?.Update($"Done!", 100);

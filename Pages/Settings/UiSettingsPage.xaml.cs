@@ -1,20 +1,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using WinDurango.UI.Settings;
-using WinDurango.UI.Utils;
 
 
 namespace WinDurango.UI.Pages.Settings
@@ -24,7 +13,7 @@ namespace WinDurango.UI.Pages.Settings
         public UiSettings()
         {
             this.InitializeComponent();
-                        
+
             ComboBoxItem psbSelected = PatchSourceButton.Items
                 .OfType<ComboBoxItem>()
                 .FirstOrDefault(item => item.Tag.ToString() == App.Settings.Settings.DownloadSource.ToString());
@@ -32,7 +21,7 @@ namespace WinDurango.UI.Pages.Settings
             {
                 PatchSourceButton.SelectedItem = psbSelected;
             }
-            
+
             ComboBoxItem themeSelected = themeButton.Items
                 .OfType<ComboBoxItem>()
                 .FirstOrDefault(item => item.Tag.ToString() == App.Settings.Settings.Theme.ToString());
@@ -41,7 +30,7 @@ namespace WinDurango.UI.Pages.Settings
                 themeButton.SelectedItem = themeSelected;
             }
         }
-        
+
         private void OnThemeSelected(object sender, RoutedEventArgs e)
         {
             if (themeButton.SelectedItem is not ComboBoxItem sel)
@@ -53,7 +42,7 @@ namespace WinDurango.UI.Pages.Settings
             {
                 return;
             }
-            
+
             if (App.Settings.Settings.Theme == theme)
             {
                 return;
@@ -61,24 +50,24 @@ namespace WinDurango.UI.Pages.Settings
 
             App.Settings.Set("Theme", theme);
         }
-        
+
         private async void OnSourceSelected(object sender, RoutedEventArgs e)
         {
             if (PatchSourceButton.SelectedItem is not ComboBoxItem sel)
             {
                 return;
             }
-            
+
             if (!Enum.TryParse(sel.Tag.ToString(), out UiConfigData.PatchSource source))
             {
                 return;
             }
-                
+
             if (App.Settings.Settings.DownloadSource == source)
             {
                 return;
             }
-            
+
             PatchSourceButton.SelectedItem = sel.Content;
             App.Settings.Set("DownloadSource", source);
         }
@@ -100,7 +89,7 @@ namespace WinDurango.UI.Pages.Settings
                 App.Settings.Set(settingName, toggleSwitch.IsOn);
             }
         }
-        
+
         private void OnDebugLogToggleLoaded(object sender, RoutedEventArgs e)
         {
             if (!Debugger.IsAttached || ((ToggleSwitch)sender).IsEnabled)

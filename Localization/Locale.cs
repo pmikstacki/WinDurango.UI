@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using WinDurango.UI.Utils;
 using WinUI3Localizer;
 

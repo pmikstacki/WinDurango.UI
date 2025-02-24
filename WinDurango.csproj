@@ -38,13 +38,20 @@
   <ItemGroup>
     <None Remove="Controls\AppTile.xaml" />
     <None Remove="Controls\ContributorInfo.xaml" />
+    <None Remove="Controls\ModInfo.xaml" />
     <None Remove="Dialogs\AppListDialog.xaml" />
     <None Remove="Dialogs\InstallConfirmationDialog.xaml" />
+    <None Remove="Dialogs\PageDialog.xaml" />
     <None Remove="Pages\AboutPage.xaml" />
     <None Remove="Pages\AppsListPage.xaml" />
+    <None Remove="Pages\Dialog\ModManPage.xaml" />
     <None Remove="Pages\NotImplementedPage.xaml" />
     <None Remove="Pages\SettingsPage.xaml" />
   </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <WebView2UseWinRT>False</WebView2UseWinRT>
+    <WebView2EnableCsWinRTProjection>False</WebView2EnableCsWinRTProjection>
+  </PropertyGroup>
 
 	<PropertyGroup>
 		<WindowsSdkPackageVersion>10.0.26100.38</WindowsSdkPackageVersion>
@@ -53,6 +60,7 @@
 		<Authors>WinDurango</Authors>
 		<Company>WinDurango</Company>
 		<PackageProjectUrl>https://github.com/WinDurango/WinDurango.UI</PackageProjectUrl>
+		<Nullable>disable</Nullable>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
@@ -102,6 +110,10 @@
   <ItemGroup>
     <Page Update="Controls\ContributorInfo.xaml">
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Dialogs\PageDialog.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
 
@@ -153,7 +165,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\Settings\" />
+    <Page Update="Controls\ModInfo.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Pages\Dialog\ModManPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

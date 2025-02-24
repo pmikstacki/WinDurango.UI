@@ -1,22 +1,5 @@
-﻿using CommunityToolkit.WinUI;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Media.Animation;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Core;
-using Windows.Foundation;
-using Windows.Storage.Streams;
-using WinDurango.UI.Dialogs;
+﻿using System;
 using WinDurango.UI.Settings;
-using WinDurango.UI.Utils;
 
 namespace WinDurango.UI.Controls
 {

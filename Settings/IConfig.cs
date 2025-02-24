@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace WinDurango.UI.Settings
+﻿namespace WinDurango.UI.Settings
 {
     public interface IConfig
     {

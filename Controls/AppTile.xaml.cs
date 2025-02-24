@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.WinUI;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
@@ -7,12 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Storage.Streams;
 using WinDurango.UI.Dialogs;
+using WinDurango.UI.Pages.Dialog;
 using WinDurango.UI.Settings;
 using WinDurango.UI.Utils;
 
@@ -66,12 +65,19 @@ namespace WinDurango.UI.Controls
             Logger.WriteDebug($"Opening app installation folder {_package.InstalledPath}");
             _ = Process.Start(new ProcessStartInfo(_package.InstalledPath) { UseShellExecute = true });
         }
-        
+
         private async void ShowNotImplemented(object sender, RoutedEventArgs e)
         {
             Logger.WriteWarning($"Not implemented");
             NoticeDialog impl = new NoticeDialog($"This feature has not been implemented yet.", "Not Implemented");
             await impl.Show();
+        }
+
+        private async void ShowModManager(object sender, RoutedEventArgs e)
+        {
+            PageDialog pgd = new PageDialog(typeof(ModMan), _package.InstalledPath, $"Installed mods for {_package.DisplayName}");
+            pgd.XamlRoot = App.MainWindow.Content.XamlRoot;
+            await pgd.ShowAsync();
         }
 
         private async void RepatchPackage(object sender, RoutedEventArgs args)
@@ -84,7 +90,7 @@ namespace WinDurango.UI.Controls
             });
             NoticeDialog good = new NoticeDialog($"WinDurango was reinstalled in package {_Name}", "Reinstalled");
             await good.Show();
-            
+
             App.MainWindow.ReloadAppList();
         }
 
@@ -142,7 +148,8 @@ namespace WinDurango.UI.Controls
             try
             {
                 appListEntries = _package.GetAppListEntries();
-            } catch
+            }
+            catch
             {
                 Logger.WriteWarning($"Could not get the applist entries of \"{_Name}\"");
             }
@@ -184,7 +191,7 @@ namespace WinDurango.UI.Controls
             MenuFlyout rcFlyout = new();
 
             bool isPatched = false;
-            
+
             installedPackage instPackage = App.InstalledPackages.GetPackage(_package.Id.FamilyName);
             if (instPackage != null)
                 isPatched = instPackage.IsPatched;
@@ -205,7 +212,8 @@ namespace WinDurango.UI.Controls
                 };
                 unpatchButton.Click += UnpatchPackage;
                 rcFlyout.Items.Add(unpatchButton);
-            } else
+            }
+            else
             {
                 patchButton.Click += PatchPackage;
             }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using Windows.ApplicationModel;
@@ -25,7 +24,7 @@ namespace WinDurango.UI.Settings
         {
             WriteIndented = true
         };
-        
+
         private readonly List<installedPackage> _installedPackages;
 
         public InstalledPackages()
@@ -51,7 +50,7 @@ namespace WinDurango.UI.Settings
                                      ?? [];
             }
         }
-        
+
         public void RemovePackage(Package pkg)
         {
             installedPackage package = _installedPackages.Find(p => p.FamilyName == pkg.Id.FamilyName);
@@ -78,7 +77,7 @@ namespace WinDurango.UI.Settings
         {
             return _installedPackages.Find(p => p.FamilyName == pkg.Id.FamilyName);
         }
-        
+
         public installedPackage? GetPackage(string familyName)
         {
             return _installedPackages.Find(p => p.FamilyName == familyName);
@@ -104,7 +103,7 @@ namespace WinDurango.UI.Settings
             File.WriteAllText(Path.Combine(App.DataDir, "InstalledPackages.json"), json);
             Logger.WriteDebug("Saved InstalledPackages.json");
         }
-        
+
         public void AddPackage(Package package)
         {
             if (_installedPackages.Exists(p => p.FamilyName == package.Id.FamilyName))

@@ -1,7 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
-using WinDurango.UI.Utils;
 
 
 namespace WinDurango.UI.Pages

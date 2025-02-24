@@ -8,7 +8,6 @@ using System.Xml.Linq;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
 using WinDurango.UI.Dialogs;
-using WinDurango.UI.Settings;
 using WinUI3Localizer;
 using static WinDurango.UI.Localization.Locale;
 
@@ -16,7 +15,8 @@ namespace WinDurango.UI.Utils
 {
     // do not touch or you will combust from all the glue holding this together
     // this class sucks so much that we literally had to stop bc we didn't know how to rewrite a function and make it still work with the UI stuff
-    #nullable enable
+    // update: this was fixed same commit.
+#nullable enable
     public class ManifestInfo
     {
         public string? DisplayName { get; set; }
@@ -38,7 +38,7 @@ namespace WinDurango.UI.Utils
         public static ManifestInfo GetPropertiesFromManifest(string manifestPath)
         {
             ManifestInfo manifestInfo = new();
-            
+
             if (!File.Exists(manifestPath))
                 return manifestInfo;
 
@@ -76,7 +76,8 @@ namespace WinDurango.UI.Utils
 
         public static string GetSplashScreenPath(Package pkg)
         {
-            try {
+            try
+            {
                 string installPath = pkg.InstalledPath;
                 string manifestPath = Path.Combine(installPath, "AppxManifest.xml");
 

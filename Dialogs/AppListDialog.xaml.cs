@@ -4,10 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Windows.ApplicationModel;
-using WinDurango.UI.Settings;
-using WinDurango.UI.Utils;
 using Image = Microsoft.UI.Xaml.Controls.Image;
 
 namespace WinDurango.UI.Dialogs
@@ -52,9 +49,9 @@ namespace WinDurango.UI.Dialogs
                     Width = 64,
                     Height = 64,
                     Margin = new Thickness(5),
-                    Source = new BitmapImage(pkg.Logo ?? new Uri("ms-appx:///Assets/testimg.png"))
+                    Source = new BitmapImage(pkg.Logo)
                 };
-                packageLogo.ImageFailed += LogoFailed;
+                //packageLogo.ImageFailed += LogoFailed;
 
                 var packageInfo = new StackPanel
                 {

@@ -1,4 +1,3 @@
-using CommunityToolkit.WinUI;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -6,7 +5,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Threading.Tasks;
 using WinDurango.UI.Dialogs;
 using WinDurango.UI.Pages;
 using WinDurango.UI.Settings;
@@ -21,7 +19,7 @@ namespace WinDurango.UI
         public AppsListPage AppsListPage;
         public SettingsPage SettingsPage;
         public AboutPage AboutPage;
-        
+
         private void NavigationInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             if (args.IsSettingsInvoked)

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows.Markup.Localizer;
 using Windows.Storage;
 using WinDurango.UI.Settings;
 using WinDurango.UI.Utils;

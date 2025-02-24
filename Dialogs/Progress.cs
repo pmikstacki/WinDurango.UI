@@ -1,7 +1,5 @@
-﻿using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System;
 
 namespace WinDurango.UI.Dialogs
 {
@@ -28,7 +26,7 @@ namespace WinDurango.UI.Dialogs
                 Width = 300,
                 Value = _progress
             };
-            
+
             _textBlock = new TextBlock
             {
                 Text = _text,
@@ -49,7 +47,7 @@ namespace WinDurango.UI.Dialogs
                     _progressBar
                 }
             };
-            
+
             Grid.SetRow(_progressBar, 2);
             Title = _title;
             XamlRoot = App.MainWindow.Content.XamlRoot;

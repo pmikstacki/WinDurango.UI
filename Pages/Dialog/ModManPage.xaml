@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WinDurango.UI.Pages.Dialog.ModMan"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinDurango.UI.Pages.Dialog"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <ScrollViewer>
+            <StackPanel>
+                <StackPanel Name="cModList">
+                    <TextBlock Name="noModsFolder" Visibility="Collapsed">
+                        Mods directory hasn't been created yet.
+                        <LineBreak/>Click "View mods folder" to create one.
+                    </TextBlock>
+                    <TextBlock Name="noMods" Visibility="Collapsed">No mods found.</TextBlock>
+                    <StackPanel Name="modList"></StackPanel>
+                </StackPanel>
+                <Button HorizontalAlignment="Right" Margin="0, 10, 0, 0" Content="Open mods folder" Name="openModsFolder" Click="OpenModsFolder"></Button>
+                <Button HorizontalAlignment="Right" Margin="0, 10, 0, 0" Content="Create mods folder" Name="createModsFolder" Click="CreateModsFolder" Visibility="Collapsed"></Button>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
