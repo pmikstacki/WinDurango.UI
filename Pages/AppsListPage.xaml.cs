@@ -51,7 +51,14 @@ namespace WinDurango.UI.Pages
 
         private async void ShowAppListView(object sender, RoutedEventArgs e)
         {
-            AppListDialog dl = new(Packages.GetInstalledPackages().ToList(), true);
+            List<Windows.ApplicationModel.Package> uwpApps = Packages.GetInstalledPackages().ToList();
+            if (uwpApps.Count <= 0)
+            {
+                NoticeDialog dialog = new NoticeDialog("No UWP Apps have been found.");
+                await dialog.ShowAsync();
+                return;
+            }
+            AppListDialog dl = new(uwpApps, true);
             dl.Title = "Installed UWP apps";
             dl.XamlRoot = this.Content.XamlRoot;
             await dl.ShowAsync();
