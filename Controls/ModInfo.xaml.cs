@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System.Diagnostics;
 using System.IO;
+using Windows.AI.MachineLearning.Preview;
 using WinDurango.UI.Pages.Dialog;
 
 namespace WinDurango.UI.Controls
@@ -24,21 +25,27 @@ namespace WinDurango.UI.Controls
             string name = _info.ProductName;
             string description = _info.FileDescription;
             string publisher = _info.CompanyName;
+            string version = _info.ProductVersion;
 
-            if (name == "" || name == null)
+            if (string.IsNullOrEmpty(name))
                 name = Path.GetFileNameWithoutExtension(_dllPath);
 
-            if (publisher == "" || publisher == null)
+            if (string.IsNullOrEmpty(publisher))
                 publisher = "Unknown Author";
 
             this.name.Text = name;
             // check if desc is invalid OR the name bc C# projs seem to have a bunch of fields set "incorrectly"
-            if (description == null || description == "" || description == name)
+            if (string.IsNullOrEmpty(description) || description == name)
                 this.description.Visibility = Visibility.Collapsed;
 
-            this.version.Text = $"v{_info.ProductVersion}";
+            if(!string.IsNullOrEmpty(_info.ProductVersion))
+                version = "v" + version;
+            else
+                this.version.Visibility = Visibility.Collapsed;
+    
             this.description.Text = description;
             this.publisher.Text = publisher;
+            this.version.Text = version;
         }
 
         private void ChangeModStatus(object sender, RoutedEventArgs e)
