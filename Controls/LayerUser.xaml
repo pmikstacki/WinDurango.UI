@@ -4,16 +4,26 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 xmlns:local="using:WinDurango.UI.Controls"
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-mc:Ignorable="d"
-Margin="10, 10, 10, 10">
-
-    <StackPanel Margin="5, 0, 0, 0">
-        <TextBlock Name="Info2" Margin="0,0,0,10" FontWeight="Bold"></TextBlock>
-        <TextBlock Text="Username:"></TextBlock>
-        <TextBox Name="Username"></TextBox>
-        <TextBlock Text="User ID:"></TextBlock>
-        <TextBox Name="UserId"></TextBox>
-    </StackPanel>
+mc:Ignorable="d" Margin="0, 0, 0, 10" 
+Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
+Padding="10, 10, 10, 10" CornerRadius="5">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <StackPanel Margin="5, 0, 0, 0" Grid.Column="0">
+            <TextBlock Text="Username"></TextBlock>
+            <TextBox Name="Username" LostFocus="Save"></TextBox>
+            <TextBlock Text="User ID"></TextBlock>
+            <TextBox Name="UserId" TextChanged="UserId_TextChanged" LostFocus="Save"></TextBox>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Margin="5, 16, 0, 0">
+            <Button Name="deleteButton" Click="DeleteUser">
+                <SymbolIcon Symbol="Delete"></SymbolIcon>
+            </Button>
+        </StackPanel>
+    </Grid>
 </StackPanel>
 
 

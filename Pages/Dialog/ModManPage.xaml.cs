@@ -10,12 +10,12 @@ using WinDurango.UI.Utils;
 
 namespace WinDurango.UI.Pages.Dialog
 {
-    public sealed partial class ModMan : Page
+    public sealed partial class ModManPage : Page
     {
         private string _modsPath;
         private string _packagePath;
 
-        public ModMan()
+        public ModManPage()
         {
             this.InitializeComponent();
         }

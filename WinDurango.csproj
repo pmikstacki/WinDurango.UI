@@ -45,6 +45,7 @@
     <None Remove="Pages\AboutPage.xaml" />
     <None Remove="Pages\AppsListPage.xaml" />
     <None Remove="Pages\Dialog\ModManPage.xaml" />
+    <None Remove="Pages\Dialog\UserManPage.xaml" />
     <None Remove="Pages\NotImplementedPage.xaml" />
     <None Remove="Pages\SettingsPage.xaml" />
   </ItemGroup>
@@ -192,5 +193,11 @@
 
   <ItemGroup>
     <PRIResource Remove="Strings\en-US\Ui.resw" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Pages\Dialog\UserManPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

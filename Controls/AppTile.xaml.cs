@@ -11,6 +11,7 @@ using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Storage.Streams;
 using WinDurango.UI.Dialogs;
+using WinDurango.UI.Pages;
 using WinDurango.UI.Pages.Dialog;
 using WinDurango.UI.Settings;
 using WinDurango.UI.Utils;
@@ -75,7 +76,14 @@ namespace WinDurango.UI.Controls
 
         private async void ShowModManager(object sender, RoutedEventArgs e)
         {
-            PageDialog pgd = new PageDialog(typeof(ModMan), _package.InstalledPath, $"Installed mods for {_package.DisplayName}");
+            PageDialog pgd = new PageDialog(typeof(ModManPage), _package.InstalledPath, $"Installed mods for {_package.DisplayName}");
+            pgd.XamlRoot = App.MainWindow.Content.XamlRoot;
+            await pgd.ShowAsync();
+        }
+
+        private async void ShowSaveManager(object sender, RoutedEventArgs e)
+        {
+            PageDialog pgd = new PageDialog(typeof(NotImplementedPage), null, $"{_package.DisplayName} saves");
             pgd.XamlRoot = App.MainWindow.Content.XamlRoot;
             await pgd.ShowAsync();
         }

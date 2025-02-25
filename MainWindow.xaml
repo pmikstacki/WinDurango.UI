@@ -40,7 +40,6 @@
             x:Name="navView">
             <NavigationView.MenuItems>
                 <NavigationViewItem Icon="AllApps" Content="Home" Tag="AppsListPage"/>
-                <NavigationViewItem Icon="Save" Content="Save Manager" Tag="NotImplementedPage"/>
             </NavigationView.MenuItems>
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem Content="About" Tag="AboutPage">

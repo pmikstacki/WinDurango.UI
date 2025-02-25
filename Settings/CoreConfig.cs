@@ -46,6 +46,20 @@ namespace WinDurango.UI.Settings
         {
             public string Name { get; set; } = "durangler";
             public ulong Id { get; set; } = 0;
+
+            public static ulong GetFreeId()
+            {
+                var ids = new HashSet<ulong>(App.CoreSettings.Settings.Users.Select(usr => usr.Id));
+
+                for (ulong i = 1; i < ulong.MaxValue; i++) 
+                {
+                    if (!ids.Contains(i))
+                        return i;
+                }
+
+                return 0;
+            }
+
         }
 
         public class ControllerKeybind
@@ -65,11 +79,11 @@ namespace WinDurango.UI.Settings
 
         public List<User> Users { get; set; } = [
             new User() {
-                Name = "durangler",
+                Name = "durangler0",
                 Id = 0
             },
             new User() {
-                Name = "durangled",
+                Name = "durangler1",
                 Id = 1
             },
             new User() {
@@ -77,7 +91,7 @@ namespace WinDurango.UI.Settings
                 Id = 2
             },
             new User() {
-                Name = "durangled2",
+                Name = "durangler3",
                 Id = 3
             },
 
@@ -107,7 +121,8 @@ namespace WinDurango.UI.Settings
             try
             {
                 string json = File.ReadAllText(_settingsFile);
-                Settings = JsonSerializer.Deserialize<CoreConfigData>(json);
+                JsonSerializerOptions options = new JsonSerializerOptions { Converters = { new BindingsConverter() } };
+                Settings = JsonSerializer.Deserialize<CoreConfigData>(json, options);
 
                 if (Settings == null)
                     throw new Exception("loadedSettings is null... wtf?");

@@ -12,19 +12,7 @@
     <ScrollViewer>
         <StackPanel>
             <TextBlock Margin="0 5 0 5" Text="Layer Settings" FontSize="16" FontWeight="Bold"/>
-            <TextBlock Margin="0 5 0 5" Text="Users (UI UNFINISHED)" FontSize="16" FontWeight="Bold"/>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                
-                <StackPanel x:Name="LayerUser" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" CornerRadius="12"></StackPanel>
-                <StackPanel Orientation="Horizontal"  Grid.Row="1">
-                <ComboBox x:Name="SelectUser" SelectionChanged="OnUserSelect"></ComboBox>
-                <Button Name="saveUsers" Content="Save" Click="SaveUsers"></Button>
-                </StackPanel>
-            </Grid> 
+            <Button Margin="0 5 0 5" Click="ManageUsers">Manage users</Button>
             <TextBlock Margin="0 5 0 5" Text="Debug" FontSize="16" FontWeight="Bold"/>
             <ToggleSwitch OnContent="Enable console" OffContent="Enable console" Toggled="OnToggleSetting" Tag="EnableConsole" Name="ConsoleToggle"/>
             <ToggleSwitch OnContent="Enable debug logging" OffContent="Enable debug logging"  Toggled="OnToggleSetting" Tag="DebugLogging" Name="DebugLogToggle"/>

@@ -20,7 +20,7 @@
             <Grid Name="expanderButtons" Grid.Row="1" Margin="10 0 0 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3.5*"/>
                 </Grid.ColumnDefinitions>
                 <SplitButton x:Name="unregisterButton" Grid.Column="0" Content="Remove" HorizontalAlignment="Left" Click="HandleUnregister">
                     <SplitButton.Flyout>
@@ -35,6 +35,9 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button x:Name="manageModsButton" Margin="10 0 0 0" HorizontalAlignment="Left" Click="ShowModManager" ToolTipService.ToolTip="Manage mods">
                         <SymbolIcon Symbol="Manage"></SymbolIcon>
+                    </Button>
+                    <Button x:Name="manageSavesButton" Margin="10 0 0 0" HorizontalAlignment="Left" Click="ShowSaveManager" ToolTipService.ToolTip="Manage saves">
+                        <SymbolIcon Symbol="Save"></SymbolIcon>
                     </Button>
                     <Button x:Name="viewFolderButton" Margin="10 0 0 0" HorizontalAlignment="Left" Click="OpenFolder" ToolTipService.ToolTip="View install folder">
                         <SymbolIcon Symbol="Folder"></SymbolIcon>

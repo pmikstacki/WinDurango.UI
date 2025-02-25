@@ -68,12 +68,12 @@ namespace WinDurango.UI.Controls
                 flyout.Hide();
                 File.Delete(_dllPath);
                 var parent = VisualTreeHelper.GetParent(this);
-                while (parent != null && !(parent is ModMan))
+                while (parent != null && !(parent is ModManPage))
                 {
                     parent = VisualTreeHelper.GetParent(parent);
                 }
                 if (parent != null)
-                    ((ModMan)parent).RemoveElement(this);
+                    ((ModManPage)parent).RemoveElement(this);
             };
 
             flyout.Content = new StackPanel

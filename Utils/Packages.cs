@@ -134,7 +134,7 @@ namespace WinDurango.UI.Utils
             try
             {
                 Logger.WriteInformation($"Reading manifest...");
-                controller?.UpdateText("Packages.ReadingManifest".GetLocalizedString());
+                controller?.UpdateText(GetLocalizedText("/Packages/ReadingManifest"));
                 string manifest;
                 await using (var stream = File.OpenRead(manifestPath))
                 {
@@ -168,12 +168,12 @@ namespace WinDurango.UI.Utils
 
                 controller?.UpdateProgress(60.0);
 
-                controller?.UpdateText("Packages.GettingAppInfo".GetLocalizedString());
+                controller?.UpdateText(GetLocalizedText("/Packages/GettingAppInfo"));
                 Package recentPkg = GetMostRecentlyInstalledPackage();
 
                 if (addInstalledPackage)
                 {
-                    controller?.UpdateText($"Ui.UpdatingAppList".GetLocalizedString());
+                    controller?.UpdateText(GetLocalizedText("/Ui/UpdatingAppList"));
                     controller?.UpdateProgress(80.0);
                     App.InstalledPackages.AddPackage(recentPkg);
                     controller?.UpdateProgress(90.0);

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WinDurango.UI.Pages.Dialog.UserManPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinDurango.UI.Pages.Dialog"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:ct="using:CommunityToolkit.WinUI.Controls">
+
+    <Grid>
+        <ct:DockPanel>
+            <ScrollViewer ct:DockPanel.Dock="Top" MaxHeight="400">
+                <StackPanel Name="userList"/>
+            </ScrollViewer>
+            <Button Name="addUser" ct:DockPanel.Dock="Bottom" HorizontalAlignment="Right" Click="AddUser" Margin="0, 10, 0, 0">
+                <SymbolIcon Symbol="Add"></SymbolIcon>
+            </Button>
+        </ct:DockPanel>
+    </Grid>
+</Page>
