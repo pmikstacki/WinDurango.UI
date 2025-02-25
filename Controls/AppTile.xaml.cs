@@ -58,7 +58,7 @@ namespace WinDurango.UI.Controls
             }
 
             App.InstalledPackages.RemovePackage(_package);
-            App.MainWindow.AppsListPage.InitAppList();
+            _ = App.MainWindow.AppsListPage.InitAppListAsync();
         }
 
         private void OpenFolder(object sender, RoutedEventArgs e)

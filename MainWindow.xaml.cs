@@ -48,7 +48,7 @@ namespace WinDurango.UI
 
         public void ReloadAppList()
         {
-            AppsListPage?.InitAppList();
+            _ = AppsListPage?.InitAppListAsync();
         }
 
         public void LoadSettings()
