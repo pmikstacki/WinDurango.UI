@@ -39,7 +39,7 @@
             ItemInvoked="NavigationInvoked"
             x:Name="navView">
             <NavigationView.MenuItems>
-                <NavigationViewItem Icon="AllApps" Content="Home" Tag="AppsListPage"/>
+                <NavigationViewItem Icon="AllApps" Content="Home" Tag="AppsListPage" IsSelected="True"/>
             </NavigationView.MenuItems>
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem Content="About" Tag="AboutPage">

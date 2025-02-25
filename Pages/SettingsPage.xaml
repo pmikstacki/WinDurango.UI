@@ -16,9 +16,10 @@
             IsBackButtonVisible="Collapsed"
             ItemInvoked="NavigationInvoked"
             IsSettingsVisible="False"
-            x:Name="navView">
+            x:Name="navView"
+            >
             <NavigationView.MenuItems>
-                <NavigationViewItem Icon="XboxOneConsole" Content="WinDurango Settings" Tag="LayerSettings"/>
+                <NavigationViewItem Icon="XboxOneConsole" Content="WinDurango Settings" Tag="LayerSettings" IsSelected="True"/>
                 <NavigationViewItem Icon="NewWindow" Content="UI Settings" Tag="UiSettings"/>
             </NavigationView.MenuItems>
             <Frame x:Name="contentFrame"/>
