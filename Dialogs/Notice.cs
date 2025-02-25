@@ -17,7 +17,7 @@ namespace WinDurango.UI.Dialogs
             _title = title;
         }
 
-        public async Task Show()
+        public async Task ShowAsync()
         {
             _messageDialog = new ContentDialog
             {

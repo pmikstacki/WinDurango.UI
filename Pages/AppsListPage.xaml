@@ -21,8 +21,8 @@
                     <StackPanel>
                         <CheckBox Content="Add to App List" Name="addToAppListCheckBox" Unchecked="UpdateCheckboxes" Checked="UpdateCheckboxes" IsChecked="True"/>
                         <CheckBox Content="Auto symlink DLLs" Name="autoSymlinkCheckBox" Unchecked="UpdateCheckboxes" Checked="UpdateCheckboxes" IsChecked="True"/>
-                            <Button x:Name="eraScan" Margin="0 10 0 10" Click="ShowInstalledEraApps">Scan for installed Era/XbUWP apps</Button>
-                            <Button x:Name="addExistingPackageButton" Click="ShowAppListView">Add existing package</Button>
+                        <Button x:Name="eraScan" Margin="0 10 0 10" Click="ShowInstalledEraApps">Scan for installed Era/XbUWP apps</Button>
+                        <Button x:Name="addExistingPackageButton" Click="ShowAppListView">Add existing package</Button>
                     </StackPanel>
                 </Flyout>
             </SplitButton.Flyout>

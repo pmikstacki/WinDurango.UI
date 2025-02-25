@@ -98,7 +98,7 @@ namespace WinDurango.UI
         {
             // have to do it here otherwise instance error
             var devNotice = new NoticeDialog($"This UI is very early in development, and mainly developed by a C# learner... There WILL be bugs, and some things will NOT work...\n\nDevelopers, check Readme.md in the repo for the todolist.", "Important");
-            await devNotice.Show();
+            await devNotice.ShowAsync();
             if (ExtendsContentIntoTitleBar)
             {
                 SetupTitleBar();
