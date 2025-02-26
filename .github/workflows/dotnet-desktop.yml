@@ -78,13 +78,8 @@ jobs:
     - name: Restore the application
       run: dotnet restore
 
-    - name: Build
-      run: dotnet build --configuration $env:Configuration
-      env:
-        Configuration: ${{ matrix.configuration }}
-
     - name: Publish
-      run: dotnet publish --configuration $env:Configuration --output ./$env:Configuration -r win-x64
+      run: dotnet publish --configuration $env:Configuration --output ./$env:Configuration -r win-x64 /p:Platform=x64
       env:
         Configuration: ${{ matrix.configuration }}
 
