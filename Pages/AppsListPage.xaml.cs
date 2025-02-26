@@ -51,7 +51,14 @@ namespace WinDurango.UI.Pages
 
         private async void ShowAppListView(object sender, RoutedEventArgs e)
         {
-            AppListDialog dl = new(Packages.GetInstalledPackages().ToList(), true);
+            List<Windows.ApplicationModel.Package> uwpApps = Packages.GetInstalledPackages().ToList();
+            if (uwpApps.Count <= 0)
+            {
+                NoticeDialog dialog = new NoticeDialog("No UWP Apps have been found.");
+                await dialog.ShowAsync();
+                return;
+            }
+            AppListDialog dl = new(uwpApps, true);
             dl.Title = "Installed UWP apps";
             dl.XamlRoot = this.Content.XamlRoot;
             await dl.ShowAsync();
@@ -59,7 +66,14 @@ namespace WinDurango.UI.Pages
 
         private async void ShowInstalledEraApps(object sender, RoutedEventArgs e)
         {
-            AppListDialog dl = new(XHandler.GetXPackages(Packages.GetInstalledPackages().ToList()), true);
+            List<Windows.ApplicationModel.Package> eraApps = XHandler.GetXPackages(Packages.GetInstalledPackages().ToList());
+            if (eraApps.Count <= 0)
+            {
+                NoticeDialog dialog = new NoticeDialog("No Era/XUWP Apps have been found.");
+                await dialog.ShowAsync();
+                return;
+            }
+            AppListDialog dl = new(eraApps, true);
             dl.Title = "Installed Era/XUWP apps";
             dl.XamlRoot = this.Content.XamlRoot;
             await dl.ShowAsync();
@@ -148,13 +162,13 @@ namespace WinDurango.UI.Pages
                         {
                             // there is no AppxManifest inside.
                             Logger.WriteError($"Could not find AppxManifest.xml in {folder.Path} and {mountFolder}");
-                            await new NoticeDialog(GetLocalizedText("/Packages/ManifestNotFoundMulti", folder.Path, mountFolder), "Error").Show();
+                            await new NoticeDialog(GetLocalizedText("/Packages/ManifestNotFoundMulti", folder.Path, mountFolder), "Error").ShowAsync();
                         }
                     }
                     else
                     {
                         Logger.WriteError($"Could not find AppxManifest.xml in {folder.Path} and no Mount folder exists");
-                        await new NoticeDialog(GetLocalizedText("/Packages/ManifestNotFoundNoMount", folder.Path), "Error").Show();
+                        await new NoticeDialog(GetLocalizedText("/Packages/ManifestNotFoundNoMount", folder.Path), "Error").ShowAsync();
                     }
 
                     return;

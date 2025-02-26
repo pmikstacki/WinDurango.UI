@@ -22,7 +22,6 @@ namespace WinDurango.UI.Pages
                 "UiSettings" => typeof(UiSettings),
                 _ => typeof(WdSettingsPage)
             };
-
             contentFrame.Navigate(pageType);
         }
 

@@ -10,7 +10,7 @@
     BorderThickness="0">
 
     <ScrollViewer>
-        <StackPanel>
+        <StackPanel Padding="16">
             <TextBlock Margin="0 5 0 5" Text="Layer Settings" FontSize="16" FontWeight="Bold"/>
             <Button Margin="0 5 0 5" Click="ManageUsers">Manage users</Button>
             <TextBlock Margin="0 5 0 5" Text="Debug" FontSize="16" FontWeight="Bold"/>

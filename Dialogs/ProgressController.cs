@@ -47,7 +47,7 @@ namespace WinDurango.UI.Dialogs
             {
                 _dialog.Hide();
                 NoticeDialog oops = new NoticeDialog(title, reason);
-                await oops.Show();
+                await oops.ShowAsync();
             });
         }
 
@@ -59,7 +59,7 @@ namespace WinDurango.UI.Dialogs
             {
                 _dialog.Hide();
                 NoticeDialog oops = new NoticeDialog(title, ex.Message);
-                await oops.Show();
+                await oops.ShowAsync();
             });
         }
 
@@ -96,7 +96,7 @@ namespace WinDurango.UI.Dialogs
             {
                 _dialog.Hide();
                 NoticeDialog oops = new NoticeDialog(ex.Message, "Error");
-                await oops.Show();
+                await oops.ShowAsync();
             }
         }
 
@@ -112,7 +112,7 @@ namespace WinDurango.UI.Dialogs
             {
                 _dialog.Hide();
                 NoticeDialog oops = new NoticeDialog(ex.Message, "Error");
-                await oops.Show();
+                await oops.ShowAsync();
             }
         }
     }

@@ -49,6 +49,7 @@ public class UiConfig : IConfig
         {
             Logger.WriteWarning($"Settings file doesn't exist");
             Generate();
+            return;
         }
 
         try
@@ -108,6 +109,9 @@ public class UiConfig : IConfig
             JsonSerializerOptions options = new();
             options.WriteIndented = true;
             File.WriteAllText(_settingsFile, JsonSerializer.Serialize(Settings, options));
+            /* FIXME: For some reason unknown to me, App.MainWindow is null here, but only if the Settings were generated before e.g. on first launch
+             * No biggy in that case as nothing has been customized yet, but depending on the reason this might cause problems.
+            */
             App.MainWindow.LoadSettings();
         }
         catch (Exception ex)

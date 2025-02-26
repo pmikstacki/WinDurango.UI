@@ -7,7 +7,7 @@
     PrimaryButtonText="Add"
     PrimaryButtonClick="AddToAppList"
     SecondaryButtonText="Cancel"
-    SecondaryButtonClick="hideDialog">
+    SecondaryButtonClick="HideDialog">
     <Grid>
         <ListView x:Name="appListView" Loaded="AppListView_Loaded">
         </ListView>

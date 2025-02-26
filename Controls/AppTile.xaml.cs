@@ -54,7 +54,7 @@ namespace WinDurango.UI.Controls
                     await Packages.RemovePackage(_package, controller);
                 });
                 NoticeDialog good = new NoticeDialog($"{_Name} has been uninstalled.", "Uninstalled");
-                await good.Show();
+                await good.ShowAsync();
             }
 
             App.InstalledPackages.RemovePackage(_package);
@@ -71,7 +71,7 @@ namespace WinDurango.UI.Controls
         {
             Logger.WriteWarning($"Not implemented");
             NoticeDialog impl = new NoticeDialog($"This feature has not been implemented yet.", "Not Implemented");
-            await impl.Show();
+            await impl.ShowAsync();
         }
 
         private async void ShowModManager(object sender, RoutedEventArgs e)
@@ -97,7 +97,7 @@ namespace WinDurango.UI.Controls
                 await WinDurangoPatcher.PatchPackage(_package, true, progress);
             });
             NoticeDialog good = new NoticeDialog($"WinDurango was reinstalled in package {_Name}", "Reinstalled");
-            await good.Show();
+            await good.ShowAsync();
 
             App.MainWindow.ReloadAppList();
         }
@@ -112,7 +112,7 @@ namespace WinDurango.UI.Controls
             if (!progress.failed)
             {
                 NoticeDialog good = new NoticeDialog($"WinDurango has been uninstalled from package {_Name}", "Uninstalled");
-                await good.Show();
+                await good.ShowAsync();
             }
             App.MainWindow.ReloadAppList();
         }
@@ -128,7 +128,7 @@ namespace WinDurango.UI.Controls
             if (!progress.failed)
             {
                 NoticeDialog good = new NoticeDialog($"WinDurango has been installed in package {_Name}", "Installed");
-                await good.Show();
+                await good.ShowAsync();
             }
             App.MainWindow.ReloadAppList();
         }
@@ -240,18 +240,18 @@ namespace WinDurango.UI.Controls
                 if (_package.Status.LicenseIssue)
                 {
                     Logger.WriteError($"Could not launch {_Name} due to licensing issue.");
-                    _ = new NoticeDialog($"There is a licensing issue... Do you own this package?", $"Could not launch {_Name}").Show();
+                    _ = new NoticeDialog($"There is a licensing issue... Do you own this package?", $"Could not launch {_Name}").ShowAsync();
                     return;
                 }
 
                 if (firstAppListEntry == null)
                 {
-                    _ = new NoticeDialog($"Could not get the applist entry of \"{_Name}\"", $"Could not launch {_Name}").Show();
+                    _ = new NoticeDialog($"Could not get the applist entry of \"{_Name}\"", $"Could not launch {_Name}").ShowAsync();
                     return;
                 }
                 Logger.WriteInformation($"Launching {_Name}");
                 if (await firstAppListEntry.LaunchAsync() == false)
-                    _ = new NoticeDialog($"Failed to launch \"{_Name}\"!", $"Could not launch {_Name}").Show();
+                    _ = new NoticeDialog($"Failed to launch \"{_Name}\"!", $"Could not launch {_Name}").ShowAsync();
             };
         }
     }

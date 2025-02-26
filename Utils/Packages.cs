@@ -67,7 +67,7 @@ namespace WinDurango.UI.Utils
 
             if (!Directory.Exists(mountDir))
             {
-                await new NoticeDialog(GetLocalizedText($"/Errors/NotFound", mountDir), "Error").Show();
+                await new NoticeDialog(GetLocalizedText($"/Errors/NotFound", mountDir), "Error").ShowAsync();
                 return;
             }
 
