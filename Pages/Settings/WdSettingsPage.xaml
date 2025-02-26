@@ -11,6 +11,7 @@
 
     <ScrollViewer>
         <StackPanel Padding="16">
+            <TextBlock Margin="0 5 0 5" Text="Note: These settings are non-functional at the moment as there is no config impl in the layer yet. the UI Settings DOES work though." FontSize="16" FontWeight="Bold"></TextBlock>
             <TextBlock Margin="0 5 0 5" Text="Layer Settings" FontSize="16" FontWeight="Bold"/>
             <Button Margin="0 5 0 5" Click="ManageUsers">Manage users</Button>
             <TextBlock Margin="0 5 0 5" Text="Debug" FontSize="16" FontWeight="Bold"/>
