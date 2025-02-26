@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Windows.ApplicationModel.DataTransfer;
 using WinDurango.UI.Controls;
 using WinDurango.UI.Utils;
 
@@ -74,29 +75,40 @@ namespace WinDurango.UI.Pages.Dialog
             }
         }
 
-        private void ShowInfo(string error)
+
+        // LATER: make this common
+        public void ShowInfo(string title, string message, InfoBarSeverity severity = InfoBarSeverity.Informational)
         {
-            Visibility nmLastState = noMods.Visibility;
-            Visibility nmfLastState = noModsFolder.Visibility;
-            noMods.Visibility = Visibility.Collapsed;
-            noModsFolder.Visibility = Visibility.Collapsed;
-
-            InfoBar info = new InfoBar();
-            TextBlock text = new TextBlock();
-            text.Text = error;
-
-            info.IsOpen = true;
-            info.Content = text;
-            info.MaxWidth = this.ActualWidth;
-            text.TextWrapping = TextWrapping.WrapWholeWords;
-
-            info.Closed += (InfoBar sender, InfoBarClosedEventArgs args) =>
+            this.infoBar.Children.Clear();
+            double width = this.ActualWidth;
+            if (width == 0)
             {
-                noMods.Visibility = nmLastState;
-                noModsFolder.Visibility = nmfLastState;
+                width = this.Frame.ActualWidth;
+            }
+
+            InfoBar infoBar = new InfoBar();
+            Button copyButton = new Button();
+            SymbolIcon symbolIcon = new SymbolIcon(Symbol.Copy);
+
+            copyButton.Content = symbolIcon;
+            copyButton.HorizontalAlignment = HorizontalAlignment.Right;
+            copyButton.Click += (sender, e) =>
+            {
+                DataPackage dp = new DataPackage();
+                dp.SetText(message);
+                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dp);
             };
 
-            cModList.Children.Insert(0, info);
+            infoBar.Severity = severity;
+            infoBar.IsOpen = true;
+            infoBar.Message = message;
+            infoBar.Title = title;
+            infoBar.ActionButton = copyButton;
+            infoBar.MaxWidth = this.ActualWidth;
+
+            Logger.WriteInformation(message);
+
+            this.infoBar.Children.Add(infoBar);
         }
 
         private void CreateModsFolder(object sender, RoutedEventArgs e)
@@ -117,7 +129,7 @@ namespace WinDurango.UI.Pages.Dialog
             }
             catch (Exception ex)
             {
-                ShowInfo($"Couldn't create mod folder\n{ex.Message}");
+                ShowInfo("Couldn't create mod folder", $"{ex.Message}", InfoBarSeverity.Error);
                 Logger.WriteError($"Couldn't create mod folder {_modsPath}");
                 Logger.WriteException(ex);
             }
@@ -134,7 +146,7 @@ namespace WinDurango.UI.Pages.Dialog
             }
             catch (Exception ex)
             {
-                ShowInfo($"Couldn't open mod folder\n{ex.Message}");
+                ShowInfo($"Couldn't open mod folder", $"{ex.Message}", InfoBarSeverity.Error);
                 Logger.WriteError($"Couldn't open mod folder path {_modsPath}");
                 Logger.WriteException(ex);
             }

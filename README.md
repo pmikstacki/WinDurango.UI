@@ -14,16 +14,16 @@ For building you'll need Visual Studio 2022 with the following:
  - [X] Patching
  - [X] Allow for package removal from UI instead of just completely uninstalling.
  - [X] Installation options
- - [ ] Save Manager
+ - [X] Save Manager
  - [X] Mod Manager
  - [X] Scan for already installed EraOS/XUWP stuff
  - [X] Allow for any existing installed package to be added to the applist
+ - [ ] Built in updater 
  - [ ] Resize content to fit to screen
  - [ ] Allow for search
 
 ## Bugs/Improvements
  - [X] Make the applist not go offscreen (lol)
- - [ ] Once we have enough settings in place, make it have pages using a horizontal NavigationView (probably)
  - [ ] Fix UI load speed when loading a lot of packages on startup
  - [X] Applist scrolling
  - [X] Fix icon in the titlebar

@@ -29,18 +29,28 @@ namespace WinDurango.UI.Pages
 
             foreach (installedPackage installedPackage in installedPackages)
             {
+                // TODO: add handling for that annoying invalid logo stuff
                 if (pm.FindPackageForUser(WindowsIdentity.GetCurrent().User?.Value, installedPackage.FullName) != null)
                 {
-                    Grid outerGrid = new();
-                    AppTile gameContainer = new(installedPackage.FamilyName);
-
-                    this.DispatcherQueue.TryEnqueue(() =>
+                    try
                     {
-                        outerGrid.Children.Add(gameContainer);
-                        appList.Children.Add(outerGrid);
-                    });
-        
-                    Logger.WriteDebug($"Added {installedPackage.FamilyName} to the app list");
+                        Grid outerGrid = new();
+                        AppTile gameContainer = new(installedPackage.FamilyName);
+
+                        this.DispatcherQueue.TryEnqueue(() =>
+                        {
+                            outerGrid.Children.Add(gameContainer);
+                            appList.Children.Add(outerGrid);
+                        });
+
+                        Logger.WriteDebug($"Added {installedPackage.FamilyName} to the app list");
+                    }
+                    catch (Exception ex)
+                    {
+                        // maybe should have infobar on app list?
+                        Logger.WriteError($"Failed to add {installedPackage.FamilyName} to the app list: {ex.Message}");
+                        Logger.WriteException(ex);
+                    }
                 }
                 else
                 {
@@ -102,7 +112,7 @@ namespace WinDurango.UI.Pages
             */
         }
 
-        // needs to be fixed
+        // needs to be cleaned
         private async void InstallButton_Tapped(SplitButton sender, SplitButtonClickEventArgs args)
         {
             var picker = new FolderPicker
@@ -129,7 +139,7 @@ namespace WinDurango.UI.Pages
                     {
                         dialog.Hide();
                         var controller = new ProgressDialog("Starting installation...", $"Installing {Packages.GetPropertiesFromManifest(manifest).DisplayName}", isIndeterminate: false).GetController();
-                        controller.CreateAsync(async () =>
+                        _ = controller.CreateAsync(async () =>
                         {
                             await Packages.InstallPackageAsync(new Uri(manifest, UriKind.Absolute), controller,
                                 (bool)addToAppListCheckBox.IsChecked);
@@ -150,7 +160,7 @@ namespace WinDurango.UI.Pages
                             {
                                 dialog.Hide();
                                 var controller = new ProgressDialog("Starting installation...", "Installing", isIndeterminate: false).GetController();
-                                controller.CreateAsync(async () =>
+                                _ = controller.CreateAsync(async () =>
                                 {
                                     await Packages.InstallXPackageAsync(folder.Path.ToString(), controller,
                                         (bool)addToAppListCheckBox.IsChecked);

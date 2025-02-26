@@ -27,6 +27,9 @@ namespace WinDurango.UI.Utils
     public abstract class Packages
     {
         // TODO: Make these methods not use the GUI, instead just throw an exception and catch it in the area where the method is actually invoked.
+        /// <summary>
+        /// Gets all the installed UWP packages on the system
+        /// </summary>
         public static IEnumerable<Package> GetInstalledPackages()
         {
             var sid = WindowsIdentity.GetCurrent().User?.Value;
@@ -35,6 +38,9 @@ namespace WinDurango.UI.Utils
             return pm.FindPackagesForUser(sid);
         }
 
+        /// <summary>
+        /// Gets some properties from the provided AppxManifest
+        /// </summary>
         public static ManifestInfo GetPropertiesFromManifest(string manifestPath)
         {
             ManifestInfo manifestInfo = new();
@@ -61,6 +67,12 @@ namespace WinDurango.UI.Utils
             return manifestInfo;
         }
 
+        /// <summary>
+        /// Installs an Xbox Package with the folder given to it
+        /// </summary>
+        /// <remarks>
+        /// This is simply meant for being able to pass a folder containing the Mount directory.
+        /// </remarks>
         public static async Task InstallXPackageAsync(string dir, ProgressController controller, bool addInstalledPackage = true)
         {
             string mountDir = Path.Combine(dir, "Mount");
@@ -74,6 +86,12 @@ namespace WinDurango.UI.Utils
             await InstallPackageAsync(new Uri(mountDir + "\\AppxManifest.xml", UriKind.Absolute), controller, addInstalledPackage);
         }
 
+        /// <summary>
+        /// Gets a Package's splash screen, if none is found... it returns null.
+        /// </summary>
+        /// <remarks>
+        /// It checks the package's AppxManifest for Package.Applications.Application.VisualElements.SplashScreen.Image
+        /// </remarks>
         public static string GetSplashScreenPath(Package pkg)
         {
             try
@@ -119,7 +137,9 @@ namespace WinDurango.UI.Utils
             }
         }
 
-
+        /// <summary>
+        /// Installs a Package with the provided AppxManifest
+        /// </summary>
         public static async Task<string> InstallPackageAsync(Uri appxManifestUri, ProgressController controller, bool addInstalledPackage = true)
         {
             string manifestPath = Uri.UnescapeDataString(appxManifestUri.AbsolutePath);
@@ -169,7 +189,7 @@ namespace WinDurango.UI.Utils
                 controller?.UpdateProgress(60.0);
 
                 controller?.UpdateText(GetLocalizedText("/Packages/GettingAppInfo"));
-                Package recentPkg = GetMostRecentlyInstalledPackage();
+                Package recentPkg = GetMostRecentInstalledPackage();
 
                 if (addInstalledPackage)
                 {
@@ -198,6 +218,9 @@ namespace WinDurango.UI.Utils
             }
         }
 
+        /// <summary>
+        /// Uninstalls a package
+        /// </summary>
         public static async Task RemovePackage(Package package, ProgressController controller)
         {
             Logger.WriteError($"Uninstalling {package.DisplayName}...");
@@ -219,6 +242,9 @@ namespace WinDurango.UI.Utils
             }
         }
 
+        /// <summary>
+        /// Gets a Package by it's Family Name
+        /// </summary>
         public static Package GetPackageByFamilyName(string familyName)
         {
             var packageManager = new PackageManager();
@@ -227,7 +253,10 @@ namespace WinDurango.UI.Utils
             return packages == null || !packages.Any() ? null : packages.First();
         }
 
-        public static Package GetMostRecentlyInstalledPackage()
+        /// <summary>
+        /// Gets the most recent installed package
+        /// </summary>
+        public static Package GetMostRecentInstalledPackage()
         {
             var sid = WindowsIdentity.GetCurrent().User?.Value;
             var pm = new PackageManager();
@@ -240,6 +269,5 @@ namespace WinDurango.UI.Utils
 
             return newestPackage;
         }
-
     }
 }

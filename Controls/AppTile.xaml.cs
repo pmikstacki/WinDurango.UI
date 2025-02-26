@@ -83,7 +83,7 @@ namespace WinDurango.UI.Controls
 
         private async void ShowSaveManager(object sender, RoutedEventArgs e)
         {
-            PageDialog pgd = new PageDialog(typeof(NotImplementedPage), null, $"{_package.DisplayName} saves");
+            PageDialog pgd = new PageDialog(typeof(SaveManagerPage), _familyName, $"{_package.DisplayName} saves");
             pgd.XamlRoot = App.MainWindow.Content.XamlRoot;
             await pgd.ShowAsync();
         }
@@ -117,6 +117,7 @@ namespace WinDurango.UI.Controls
             App.MainWindow.ReloadAppList();
         }
 
+        // BUG: calling second time after failure does not show the failure dialog?
         private async void PatchPackage(object sender, RoutedEventArgs args)
         {
             var progress = new ProgressDialog($"Patching {_Name}...", $"Patching {_Name}", isIndeterminate: true).GetController();

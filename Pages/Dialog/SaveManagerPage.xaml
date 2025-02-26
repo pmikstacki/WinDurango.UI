@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WinDurango.UI.Pages.Dialog.SaveManagerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinDurango.UI.Pages.Dialog"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:ct="using:CommunityToolkit.WinUI.Controls">
+
+    <Grid>
+        <ct:DockPanel>
+            <ScrollViewer ct:DockPanel.Dock="Top" MaxHeight="400">
+                <StackPanel Name="saveContainer">
+                    <TextBlock Name="noSavesHeader" Text="No saves found." Margin="0, 0, 0, 10" Visibility="Collapsed"></TextBlock>
+                    <TextBlock Name="containerHeader" Text="Containers" FontSize="18" FontWeight="Bold" Margin="0, 0, 0, 10" Visibility="Collapsed"></TextBlock>
+                    <StackPanel Name="containerList">
+                        <TextBlock>Loading...</TextBlock>
+                    </StackPanel>
+                    <TextBlock Name="folderHeader" Text="Folders" FontSize="18" FontWeight="Bold" Margin="0, 0, 0, 10" Visibility="Collapsed"></TextBlock>
+                    <StackPanel Name="folderList">
+                        <TextBlock>Loading...</TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+            <ct:DockPanel ct:DockPanel.Dock="Bottom" Name="bottomBar" Margin="0, 10, 0, 0">
+                <!-- For some reason this pushes the folderList to the side a little -->
+                <StackPanel Name="infoBar" HorizontalAlignment="Right" ct:DockPanel.Dock="Left" Orientation="Horizontal" Margin="0, 0, 10, 0"/>
+                <Button Name="viewFolder" ct:DockPanel.Dock="Right" HorizontalAlignment="Right" Click="ViewFolder">
+                    <SymbolIcon Symbol="Folder"></SymbolIcon>
+                </Button>
+            </ct:DockPanel>
+        </ct:DockPanel>
+    </Grid>
+</Page>

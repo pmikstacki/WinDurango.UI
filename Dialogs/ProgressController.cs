@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using WinDurango.UI.Utils;
 
@@ -46,8 +47,11 @@ namespace WinDurango.UI.Dialogs
             _dialog.DispatcherQueue.TryEnqueue(async () =>
             {
                 _dialog.Hide();
-                NoticeDialog oops = new NoticeDialog(title, reason);
-                await oops.ShowAsync();
+                _dialog.Closed += async (sender, e) =>
+                {
+                    NoticeDialog oops = new NoticeDialog(title, reason);
+                    await oops.ShowAsync();
+                };
             });
         }
 
@@ -58,8 +62,11 @@ namespace WinDurango.UI.Dialogs
             _dialog.DispatcherQueue.TryEnqueue(async () =>
             {
                 _dialog.Hide();
-                NoticeDialog oops = new NoticeDialog(title, ex.Message);
-                await oops.ShowAsync();
+                _dialog.Closed += async (sender, e) =>
+                {
+                    NoticeDialog oops = new NoticeDialog(title, ex.Message);
+                    await oops.ShowAsync();
+                };
             });
         }
 
@@ -86,7 +93,7 @@ namespace WinDurango.UI.Dialogs
 
         public async Task Create(Action action)
         {
-            _dialog.ShowAsync();
+            _ = _dialog.ShowAsync();
             try
             {
                 action();
@@ -102,7 +109,7 @@ namespace WinDurango.UI.Dialogs
 
         public async Task CreateAsync(Func<Task> action)
         {
-            _dialog.ShowAsync();
+            _ = _dialog.ShowAsync();
             try
             {
                 await action();

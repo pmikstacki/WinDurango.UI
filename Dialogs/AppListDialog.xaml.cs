@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using Windows.ApplicationModel;
+using WinDurango.UI.Utils;
 using Image = Microsoft.UI.Xaml.Controls.Image;
 
 namespace WinDurango.UI.Dialogs
@@ -44,12 +45,23 @@ namespace WinDurango.UI.Dialogs
                     Orientation = Orientation.Horizontal
                 };
 
+                // NOTE: DO NOT TOUCH THIS MAGICAL SHIT 
+                // it throws massive error if the image is invalid somehow or whatever...
+                Uri pkLogo = null;
+                try
+                {
+                    pkLogo = pkg.Logo;
+                } catch (Exception ex) {
+                    Logger.WriteError($"pkg.Logo threw {ex.GetType().ToString()} for {pkg.Id.FamilyName}");
+                    Logger.WriteException(ex);
+                }
+
                 var packageLogo = new Image
                 {
                     Width = 64,
                     Height = 64,
                     Margin = new Thickness(5),
-                    Source = new BitmapImage(pkg.Logo)
+                    Source = new BitmapImage(pkLogo ?? new Uri("ms-appx:///Assets/testimg.png"))
                 };
                 //packageLogo.ImageFailed += LogoFailed;
 

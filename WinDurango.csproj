@@ -37,6 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Controls\AppTile.xaml" />
+    <None Remove="Controls\ContainerInfo.xaml" />
     <None Remove="Controls\ContributorInfo.xaml" />
     <None Remove="Controls\ModInfo.xaml" />
     <None Remove="Dialogs\AppListDialog.xaml" />
@@ -45,6 +46,7 @@
     <None Remove="Pages\AboutPage.xaml" />
     <None Remove="Pages\AppsListPage.xaml" />
     <None Remove="Pages\Dialog\ModManPage.xaml" />
+    <None Remove="Pages\Dialog\SaveManagerPage.xaml" />
     <None Remove="Pages\Dialog\UserManPage.xaml" />
     <None Remove="Pages\NotImplementedPage.xaml" />
     <None Remove="Pages\SettingsPage.xaml" />
@@ -196,6 +198,18 @@
 
   <ItemGroup>
     <PRIResource Remove="Strings\en-US\Ui.resw" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\ContainerInfo.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Pages\Dialog\SaveManagerPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>
