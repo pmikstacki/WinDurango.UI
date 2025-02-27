@@ -233,7 +233,7 @@ namespace WinDurango.UI.Controls
 
             RightTapped += (sender, e) =>
             {
-                rcFlyout.ShowAt(sender as FrameworkElement);
+                rcFlyout.ShowAt(sender as FrameworkElement, e.GetPosition(sender as UIElement));
             };
 
             startButton.Tapped += async (s, e) =>
