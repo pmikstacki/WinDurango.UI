@@ -81,17 +81,17 @@ namespace WinDurango.UI.Utils
 
                 try
                 {
-                    controller?.Update($"Downloading WinDurango {relName}", 20);
-
                     await using Stream httpStream = await httpClient.GetStreamAsync(dlLink);
                     await using FileStream stream = new(archivePath, FileMode.Create, FileAccess.Write, FileShare.None);
-                    controller?.Update("Writing release zip", 30);
-                    // why so slow?
-                    await httpStream.CopyToAsync(stream);
+                    
+                    //controller?.Update("Writing release zip", 30);
+                    // Commented ^, as above code does not start the download, the download is done in the httpStream.CopyToAsync function
+                    controller?.Update($"Downloading WinDurango {relName}", 30);
+                    await httpStream.CopyToAsync(stream, 1048576); // 1MB Buffer
                 }
                 catch (Exception ex)
                 {
-                    await controller.Fail(ex.Message, "Failed to download/write zip");
+                    await controller!.Fail(ex.Message, "Failed to download/write zip");
                     return false;
                 }
 
