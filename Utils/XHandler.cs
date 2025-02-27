@@ -57,7 +57,7 @@ namespace WinDurango.UI.Utils
         public static List<Package> GetXPackages(List<Package> packages)
         {
             // first try implementation and it worked hell yeah
-            List<Package> result = new();
+            List<Package> result = [];
             foreach (Package package in packages)
             {
                 string installPath = package.InstalledPath;
@@ -67,9 +67,9 @@ namespace WinDurango.UI.Utils
                     continue;
 
                 string manifest;
-                using (var stream = File.OpenRead(manifestPath))
+                using (FileStream stream = File.OpenRead(manifestPath))
                 {
-                    var reader = new StreamReader(stream);
+                    StreamReader reader = new(stream);
                     manifest = reader.ReadToEnd();
                 }
 
@@ -82,7 +82,7 @@ namespace WinDurango.UI.Utils
                 XElement osName = prerequisites?.Descendants().FirstOrDefault(e => e.Name.LocalName == "OSName");
                 XElement osPackageDependency = dependencies?.Descendants().FirstOrDefault(e => e.Name.LocalName == "OSPackageDependency");
 
-                if ((osName != null && osName.Value.ToLower() == "era") || (osPackageDependency != null && osPackageDependency.Attribute("Name")?.Value == "Microsoft.GameOs"))
+                if ((osName != null && osName.Value.Equals("era", System.StringComparison.InvariantCultureIgnoreCase)) || (osPackageDependency != null && osPackageDependency.Attribute("Name")?.Value == "Microsoft.GameOs"))
                 {
                     result.Add(package);
                 }
