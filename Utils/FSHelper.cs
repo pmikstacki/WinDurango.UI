@@ -43,5 +43,13 @@ namespace WinDurango.UI.Utils
         {
             Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
         }
+
+        public static string FindFileOnPath(string file)
+        {
+            return Environment
+                .GetEnvironmentVariable("PATH")
+                .Split(Path.PathSeparator)
+                .FirstOrDefault(p => File.Exists(Path.Combine(p, file)));
+        }
     }
 }

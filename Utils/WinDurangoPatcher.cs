@@ -53,10 +53,7 @@ namespace WinDurango.UI.Utils
         public static async Task<bool> PatchPackage(installedPackage package, bool forceRedownload,
             ProgressController controller)
         {
-            // Artifact dll package link
-            const string dllLink =
-                "https://nightly.link/WinDurango/WinDurango/workflows/msbuild/main/WinDurango-DEBUG.zip";
-
+            string patchesPath = Path.Combine(App.DataDir, "WinDurangoCore");
             controller?.Update($"Patching {package.FamilyName}", 0);
             string curDate = DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss");
             string installPath = package.InstallPath;
@@ -64,24 +61,18 @@ namespace WinDurango.UI.Utils
             controller?.Update("Getting latest release", 10);
             await GetOrReuseRelease(); // don't use the return value since wdRelease is set regardless
             
-            // This should be further improved...
-            bool isDownloadSourceArtifact = App.Settings.Settings.DownloadSource == UiConfigData.PatchSource.Artifact;
+            string dlLink = wdRelease.DownloadLink;
+            string relName = wdRelease.Name;
+            string dlPath = $"WinDurangoCore.zip";
 
-            string dlLink = isDownloadSourceArtifact
-                ? dllLink
-                : wdRelease.DownloadLink;
-
-            string relName = isDownloadSourceArtifact
-                ? "latest GitHub Actions artifact"
-                : wdRelease.Name;
-
-            string dlPath = isDownloadSourceArtifact
-                ? "WinDurangoCore-ARTIFACT.zip"
-                : "WinDurangoCore.zip";
-
-            string patchesPath = isDownloadSourceArtifact
-                ? Path.Combine(App.DataDir, "WinDurangoCore-ARTIFACT")
-                : Path.Combine(App.DataDir, "WinDurangoCore");
+            // see this is quite messy but just needed to get it to work
+            if (App.Settings.Settings.DownloadSource == UiConfigData.PatchSource.Artifact)
+            {
+                dlLink = "https://nightly.link/WinDurango/WinDurango/workflows/msbuild/main/WinDurango-Release.zip";
+                dlPath = $"WinDurangoCore-ARTIFACT.zip";
+                patchesPath = Path.Combine(App.DataDir, "WinDurangoCore-ARTIFACT");
+                relName = $"latest GitHub Actions artifact";
+            }
 
             if (!Path.Exists(patchesPath) || forceRedownload)
             {
@@ -285,12 +276,17 @@ namespace WinDurango.UI.Utils
 
             JsonElement.ArrayEnumerator assets = newestRelease.GetProperty("assets").EnumerateArray();
 
-            if (!assets.MoveNext())
-                throw new Exception("Couldn't find any assets?????");
+            foreach (var asset in assets)
+            {
+                if (!asset.GetProperty("name").GetString().EndsWith(".zip"))
+                    continue;
 
-            string download = assets.Current.GetProperty("browser_download_url").GetString();
+                string download = asset.GetProperty("browser_download_url").GetString();
+                release.DownloadLink = download;
+            }
 
-            release.DownloadLink = download;
+            if (String.IsNullOrEmpty(release.DownloadLink))
+                throw new Exception("Couldn't find release with zip file");
 
             wdRelease = release;
             return release;
