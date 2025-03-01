@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Collections.Generic;
 using WinDurango.UI.Dialogs;
 using WinDurango.UI.Pages;
 using WinDurango.UI.Settings;
@@ -96,9 +97,27 @@ namespace WinDurango.UI
 
         private async void appTitleBar_Loaded(object sender, RoutedEventArgs e)
         {
-            // have to do it here otherwise instance error
+            Dictionary<string, string> missing = [];
+
+            if (String.IsNullOrEmpty(FSHelper.FindFileOnPath("vcruntime140d.dll")))
+                missing.Add("Microsoft Visual C++ Redistributable", null);
+
             var devNotice = new NoticeDialog($"This UI is very early in development, and mainly developed by a C# learner... There WILL be bugs, and some things will NOT work...\n\nDevelopers, check Readme.md in the repo for the todolist.", "Important");
             await devNotice.ShowAsync();
+
+            if (missing.Count != 0)
+            {
+                // todo: properly provide download link
+                string notice = $"You are missing the following dependencies, which may be required to run some packages.\n";
+                foreach (KeyValuePair<string, string> ms in missing)
+                {
+                    notice += $"\n - {ms.Key}";
+                }
+
+                var missingNotice = new NoticeDialog(notice, "Missing dependencies");
+                await missingNotice.ShowAsync();
+            }
+
             if (ExtendsContentIntoTitleBar)
             {
                 SetupTitleBar();

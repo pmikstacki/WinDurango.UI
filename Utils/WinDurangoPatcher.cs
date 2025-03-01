@@ -66,7 +66,7 @@ namespace WinDurango.UI.Utils
             // see this is quite messy but just needed to get it to work
             if (App.Settings.Settings.DownloadSource == UiConfigData.PatchSource.Artifact)
             {
-                dlLink = "https://nightly.link/WinDurango/WinDurango/workflows/msbuild/main/WinDurango-DEBUG.zip";
+                dlLink = "https://nightly.link/WinDurango/WinDurango/workflows/msbuild/main/WinDurango-Release.zip";
                 dlPath = $"WinDurangoCore-ARTIFACT.zip";
                 patchesPath = Path.Combine(App.DataDir, "WinDurangoCore-ARTIFACT");
                 relName = $"latest GitHub Actions artifact";
@@ -273,12 +273,17 @@ namespace WinDurango.UI.Utils
 
             JsonElement.ArrayEnumerator assets = newestRelease.GetProperty("assets").EnumerateArray();
 
-            if (!assets.MoveNext())
-                throw new Exception("Couldn't find any assets?????");
+            foreach (var asset in assets)
+            {
+                if (!asset.GetProperty("name").GetString().EndsWith(".zip"))
+                    continue;
 
-            string download = assets.Current.GetProperty("browser_download_url").GetString();
+                string download = asset.GetProperty("browser_download_url").GetString();
+                release.DownloadLink = download;
+            }
 
-            release.DownloadLink = download;
+            if (String.IsNullOrEmpty(release.DownloadLink))
+                throw new Exception("Couldn't find release with zip file");
 
             wdRelease = release;
             return release;
