@@ -18,9 +18,9 @@ namespace WinDurango.UI.Pages
             foreach (var contributor in lines)
             {
                 string[] info = contributor.Split(";");
-                string name = info[0];
-                string avatar = info[1];
-                string link = info[2];
+                string name = info[0].Replace("WD_CONTRIB_SEMICOLON", ";");
+                string avatar = info[1].Replace("WD_CONTRIB_SEMICOLON", ";");
+                string link = info[2].Replace("WD_CONTRIB_SEMICOLON", ";");
                 string contributionCount = info[3];
 
                 contributorList.Children.Add(new ContributorInfo(name, avatar, link));
