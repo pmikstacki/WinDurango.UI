@@ -39,7 +39,7 @@ namespace WinDurango.UI
                     "AppsListPage" => typeof(AppsListPage),
                     "AboutPage" => typeof(AboutPage),
                     "NotImplementedPage" => typeof(NotImplementedPage),
-                    _ => typeof(AppsListPage)
+                    _ => typeof(NotImplementedPage)
                 };
 
                 if (contentFrame.Content?.GetType() != pageType && contentFrame.Navigate(pageType) && contentFrame.Content is AppsListPage appsList)

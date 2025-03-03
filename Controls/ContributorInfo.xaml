@@ -9,22 +9,8 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Height="128" Width="256" Background="{ThemeResource SystemControlAltLowAcrylicElementBrush}" BorderBrush="{ThemeResource ControlElevationBorderBrush}" BorderThickness="1" CornerRadius="5">
-        <Grid.RowDefinitions>
-            <RowDefinition></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="77"></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <PersonPicture Name="developerPicture" x:FieldModifier="public" Grid.Row="0" Padding="5 0 0 0" Width="64" Height="64" VerticalAlignment="Center" BorderBrush="{ThemeResource ControlElevationBorderBrush}" BorderThickness="1"></PersonPicture>
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition></RowDefinition>
-                <RowDefinition></RowDefinition>
-            </Grid.RowDefinitions>
-            <HyperlinkButton Name="developerName" FontSize="18" x:FieldModifier="public" VerticalAlignment="Bottom" Grid.Row="0" Padding="5 5 5 5" Margin="0 0 0 0"></HyperlinkButton>
-            <TextBlock Name="developerInfo" x:FieldModifier="public" TextWrapping="WrapWholeWords" VerticalAlignment="Top" Grid.Row="1" HorizontalAlignment="Left" Margin="5 0 0 0"></TextBlock>
-        </Grid>
-    </Grid>
+    <StackPanel Background="{ThemeResource SystemControlAltLowAcrylicElementBrush}" Padding="5 5 5 5" Margin="0, 5, 0, 0" HorizontalAlignment="Left" Width="512" MaxWidth="512" Orientation="Horizontal" BorderBrush="{ThemeResource ControlElevationBorderBrush}" BorderThickness="1" CornerRadius="5">
+        <PersonPicture Name="developerPicture" x:FieldModifier="public" Grid.Row="0" Padding="5 0 0 0" Width="32" Height="32" VerticalAlignment="Center" BorderBrush="{ThemeResource ControlElevationBorderBrush}" BorderThickness="1"></PersonPicture>
+        <HyperlinkButton Name="developerName" FontSize="18" x:FieldModifier="public" HorizontalContentAlignment="Left" Grid.Row="0" Padding="5 5 5 5" Margin="0 0 0 0">Name</HyperlinkButton>
+    </StackPanel>
 </UserControl>

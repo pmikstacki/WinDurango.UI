@@ -9,22 +9,11 @@
     mc:Ignorable="d">
 
     <StackPanel Orientation="Vertical" Padding="10">
-        <TextBlock Text="Application Info" FontSize="24"/>
-        <controls:ContributorInfo Margin="0 10 10 10" x:Name="windurango_Info" HorizontalAlignment="Left"/>
-        <TextBlock Text="UI Lead Developers" FontSize="24"/>
-        <StackPanel Orientation="Horizontal">
-            <controls:ContributorInfo Margin="0 10 10 10" x:Name="dexrn_Info" HorizontalAlignment="Left"/>
-            <controls:ContributorInfo Margin="0 10 10 10" x:Name="danilwhale_Info" HorizontalAlignment="Left"/>
-        </StackPanel>
-        <!---
-            <TextBlock Text="Repo Contributors" FontSize="24"/>
-            <TextBlock>
-                <Run Text="Coming soon (maybe)"/>
-                <LineBreak/>
-                <Run Text="contrib.rocks apparently returns some svg instead of a png..."/>
-                <LineBreak/>
-                <Run Text="which makes it hard for me to use here."/>
-            </TextBlock>
-        -->
+        <TextBlock Text="About" FontSize="24"/>
+        <controls:ApplicationInfo Margin="0 10 10 10" HorizontalAlignment="Left"/>
+        <TextBlock Text="Contributors" FontSize="24"/>
+        <ScrollViewer>
+            <StackPanel Name="contributorList" />
+        </ScrollViewer>
     </StackPanel>
 </Page>

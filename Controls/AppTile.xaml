@@ -11,7 +11,7 @@
     <Button Width="320" Height="180" Padding="0" Name="startButton" CornerRadius="5, 5, 0, 0" BorderThickness="0" Background="{ThemeResource SystemControlAltLowAcrylicElementBrush}" >
         <Image x:Name="appLogo"/>
     </Button>
-    <Expander CornerRadius="0, 0, 5, 5" Width="320" Name="infoExpander">
+    <Expander CornerRadius="0, 0, 5, 5" Width="320" Name="infoExpander" Background="{ThemeResource DesktopAcrylicTransparentBrush}">
         <Grid Name="expanderControls" Width="320">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

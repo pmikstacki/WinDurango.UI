@@ -1,0 +1,1 @@
+py BuildScripts\contributors.py

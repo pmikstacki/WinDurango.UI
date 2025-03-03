@@ -36,6 +36,7 @@
     <Compile Remove="Controls\GameContainer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Controls\ApplicationInfo.xaml" />
     <None Remove="Controls\AppTile.xaml" />
     <None Remove="Controls\ContainerInfo.xaml" />
     <None Remove="Controls\ContributorInfo.xaml" />
@@ -105,6 +106,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Assets\contributors.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="Assets\icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -201,6 +205,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Update="Controls\ApplicationInfo.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Update="Controls\ContainerInfo.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -217,4 +227,8 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="BuildScripts\build.bat" />
+  </Target>
 </Project>
