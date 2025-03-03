@@ -9,6 +9,36 @@
     mc:Ignorable="d"
     >
     <ct:DockPanel>
+        <Grid HorizontalAlignment="Center" VerticalAlignment="Center" ct:DockPanel.Dock="Bottom" Name="controlList">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition MinWidth="189" Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <SplitButton
+                Grid.Column="0"
+                Margin="0,10,0,10"
+                Click="InstallButton_Tapped" 
+                x:Name="installButton">
+                
+                Install Package
+                <SplitButton.Flyout>
+                    <Flyout Placement="Top">
+                        <StackPanel>
+                            <CheckBox Content="Add to App List" Name="addToAppListCheckBox" Unchecked="UpdateCheckboxes" Checked="UpdateCheckboxes" IsChecked="True"/>
+                            <CheckBox Content="Auto symlink DLLs" Name="autoSymlinkCheckBox" Unchecked="UpdateCheckboxes" Checked="UpdateCheckboxes" IsChecked="True"/>
+                            <Button x:Name="eraScan" Margin="0 10 0 10" Click="ShowInstalledEraApps">Scan for installed Era/XbUWP apps</Button>
+                            <Button x:Name="addExistingPackageButton" Click="ShowAppListView">Add existing package</Button>
+                        </StackPanel>
+                    </Flyout>
+                </SplitButton.Flyout>
+            </SplitButton>
+            <!-- Temp placement for search box, will be moved once there's ui stuff done in "top area"-->
+            <AutoSuggestBox x:Name="SearchBox" TextChanged="SearchBox_TextChanged" Margin="12, 10, 0, 10" PlaceholderText="Search" QueryIcon="Find" Grid.Column="1"/>
+        </Grid>
+
+        <!-- Old code of ^, restore to this once we move search box -->
+        <!--
         <StackPanel ct:DockPanel.Dock="Bottom" Name="controlList">
             <SplitButton
             HorizontalAlignment="Center"
@@ -28,6 +58,10 @@
             </SplitButton.Flyout>
         </SplitButton>
         </StackPanel>
+        -->
+
+
+
         <ScrollViewer ct:DockPanel.Dock="Top" >
             <ct:WrapPanel x:Name="appList" HorizontalAlignment="Center" />
         </ScrollViewer>

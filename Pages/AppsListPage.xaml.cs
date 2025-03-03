@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
 using Windows.Management.Deployment;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -29,6 +30,22 @@ namespace WinDurango.UI.Pages
 
             foreach (installedPackage installedPackage in installedPackages)
             {
+                if (this.SearchBox.Text.Length > 0)
+                {
+                    // Maybe we should at some point save the package Name/DisplayName to installedPackage model too? to skip this step
+                    string searchMatch = "";
+                    Package pk = Packages.GetPackageByFamilyName(installedPackage.FamilyName);
+                    try
+                    {
+                        searchMatch = pk.DisplayName ?? pk.Id.Name;
+                    }
+                    catch
+                    {
+                        searchMatch = pk.Id.Name;
+                    }
+                    if (searchMatch.Contains(this.SearchBox.Text, StringComparison.InvariantCultureIgnoreCase) == false) continue;
+                }
+
                 // TODO: add handling for that annoying invalid logo stuff
                 if (pm.FindPackageForUser(WindowsIdentity.GetCurrent().User?.Value, installedPackage.FullName) != null)
                 {
@@ -110,6 +127,12 @@ namespace WinDurango.UI.Pages
             PlatinumWatch.Stop();
             Logger.WriteDebug("Initialized AppsListPage in {0:D2}:{1:D2}:{2:D2}.{3:D3}", (int)PlatinumWatch.Elapsed.TotalHours, (int)PlatinumWatch.Elapsed.TotalMinutes, (int)PlatinumWatch.Elapsed.TotalSeconds, (int)PlatinumWatch.Elapsed.TotalMilliseconds);
             */
+        }
+
+        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput) return;
+            _ = InitAppListAsync();
         }
 
         // needs to be cleaned

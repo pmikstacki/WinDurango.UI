@@ -20,11 +20,11 @@ For building you'll need Visual Studio 2022 with the following:
  - [X] Allow for any existing installed package to be added to the applist
  - [ ] Built in updater 
  - [ ] Resize content to fit to screen
- - [ ] Allow for search
+ - [X] Allow for search
 
 ## Bugs/Improvements
  - [X] Make the applist not go offscreen (lol)
- - [ ] Fix UI load speed when loading a lot of packages on startup
+ - [X] Fix UI load speed when loading a lot of packages on startup
  - [X] Applist scrolling
  - [X] Fix icon in the titlebar
  - [ ] Repo contributors on the about screen
