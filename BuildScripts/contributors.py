@@ -23,7 +23,6 @@ try:
         url = contributor.get("html_url", None)
         contribution_count = str(contributor.get("contributions", None))
         f.write(name.replace(";", "WD_CONTRIB_SEMICOLON") + ";" + pfp.replace(";", "WD_CONTRIB_SEMICOLON") + ";" + url.replace(";", "WD_CONTRIB_SEMICOLON") + ";" + contribution_count + "\n")
-        print("Wrote contributors.txt to " + os.path.join(os.path.dirname(__file__), "..", "Assets", "contributors.txt"))
 except:
     print("Couldn't fetch contributor information.")
     exit(0)
