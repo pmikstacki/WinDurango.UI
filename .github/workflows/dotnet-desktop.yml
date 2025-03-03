@@ -74,10 +74,8 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
 
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.13'
-        cache: 'pip'
+    - name: Install Python
+      run: choco install python3 --no-progress
 
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore the application
