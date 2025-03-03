@@ -63,15 +63,15 @@ namespace WinDurango.UI.Utils
             
             string dlLink = wdRelease.DownloadLink;
             string relName = wdRelease.Name;
-            string dlPath = $"WinDurangoCore.zip";
+            string dlPath = "WinDurangoCore.zip";
 
             // see this is quite messy but just needed to get it to work
             if (App.Settings.Settings.DownloadSource == UiConfigData.PatchSource.Artifact)
             {
                 dlLink = "https://nightly.link/WinDurango/WinDurango/workflows/msbuild/main/WinDurango-Release.zip";
-                dlPath = $"WinDurangoCore-ARTIFACT.zip";
+                dlPath = "WinDurangoCore-ARTIFACT.zip";
                 patchesPath = Path.Combine(App.DataDir, "WinDurangoCore-ARTIFACT");
-                relName = $"latest GitHub Actions artifact";
+                relName = "latest GitHub Actions artifact";
             }
 
             if (!Path.Exists(patchesPath) || forceRedownload)
@@ -102,6 +102,17 @@ namespace WinDurango.UI.Utils
                     Directory.CreateDirectory(patchesPath);
                     controller?.Update("Extracting", 40);
                     ZipFile.ExtractToDirectory(archivePath, patchesPath);
+
+                    // Delete the archive after extracting it
+                    try
+                    {
+                        File.Delete(archivePath);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.WriteWarning($"Failed to remove {archivePath}, after extracting it.");
+                        Logger.WriteException(e);
+                    }
                 }
                 catch (Exception ex)
                 {
