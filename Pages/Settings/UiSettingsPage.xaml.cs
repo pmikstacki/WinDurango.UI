@@ -29,6 +29,8 @@ namespace WinDurango.UI.Pages.Settings
             {
                 themeButton.SelectedItem = themeSelected;
             }
+
+            HorizontalScrollingToggle.IsOn = App.Settings.Settings.AppViewIsHorizontalScrolling;
         }
 
         private void OnThemeSelected(object sender, RoutedEventArgs e)
@@ -100,6 +102,15 @@ namespace WinDurango.UI.Pages.Settings
             ((ToggleSwitch)sender).IsEnabled = false;
             ((ToggleSwitch)sender).IsOn = true;
             ((ToggleSwitch)sender).OnContent = "Enable debug logging (currently debugging)";
+        }
+
+        private void HorizontalScrollingToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                App.Settings.Set("AppViewIsHorizontalScrolling", toggleSwitch.IsOn);
+                App.MainWindow.AppsListPage.SwitchScrollDirection(toggleSwitch.IsOn);
+            }
         }
     }
 }

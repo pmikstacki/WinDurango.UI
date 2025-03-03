@@ -24,6 +24,7 @@ namespace WinDurango.UI.Pages
         public async Task InitAppListAsync()
         {
             appList.Children.Clear();
+            SwitchScrollDirection(App.Settings.Settings.AppViewIsHorizontalScrolling);
 
             List<installedPackage> installedPackages = await Task.Run(() => App.InstalledPackages.GetPackages());
             PackageManager pm = new();
@@ -33,17 +34,20 @@ namespace WinDurango.UI.Pages
                 if (this.SearchBox.Text.Length > 0)
                 {
                     // Maybe we should at some point save the package Name/DisplayName to installedPackage model too? to skip this step
-                    string searchMatch = "";
                     Package pk = Packages.GetPackageByFamilyName(installedPackage.FamilyName);
-                    try
+                    if (pk != null)
                     {
-                        searchMatch = pk.DisplayName ?? pk.Id.Name;
+                        string searchMatch = "";
+                        try
+                        {
+                            searchMatch = pk.DisplayName ?? pk.Id.Name;
+                        }
+                        catch
+                        {
+                            searchMatch = pk.Id.Name;
+                        }
+                        if (searchMatch.Contains(this.SearchBox.Text, StringComparison.InvariantCultureIgnoreCase) == false) continue;
                     }
-                    catch
-                    {
-                        searchMatch = pk.Id.Name;
-                    }
-                    if (searchMatch.Contains(this.SearchBox.Text, StringComparison.InvariantCultureIgnoreCase) == false) continue;
                 }
 
                 // TODO: add handling for that annoying invalid logo stuff
@@ -51,13 +55,11 @@ namespace WinDurango.UI.Pages
                 {
                     try
                     {
-                        Grid outerGrid = new();
                         AppTile gameContainer = new(installedPackage.FamilyName);
 
                         this.DispatcherQueue.TryEnqueue(() =>
                         {
-                            outerGrid.Children.Add(gameContainer);
-                            appList.Children.Add(outerGrid);
+                            appList.Children.Add(gameContainer);
                         });
 
                         Logger.WriteDebug($"Added {installedPackage.FamilyName} to the app list");
@@ -104,6 +106,23 @@ namespace WinDurango.UI.Pages
             dl.Title = "Installed Era/XUWP apps";
             dl.XamlRoot = this.Content.XamlRoot;
             await dl.ShowAsync();
+        }
+
+        public void SwitchScrollDirection(bool horizontal)
+        {
+            if (horizontal)
+            {
+                scrollView.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+                scrollView.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                appList.Orientation = Orientation.Vertical;
+                appList.VerticalAlignment = VerticalAlignment.Center;
+            } else
+            {
+                scrollView.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                scrollView.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+                appList.Orientation = Orientation.Horizontal;
+                appList.VerticalAlignment = VerticalAlignment.Top;
+            }
         }
 
         private void UpdateCheckboxes(object sender, RoutedEventArgs e)

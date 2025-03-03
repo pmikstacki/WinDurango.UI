@@ -24,7 +24,7 @@
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>
-            <ct:DockPanel ct:DockPanel.Dock="Bottom" Name="bottomBar" Margin="0, 10, 0, 0">
+            <ct:DockPanel ct:DockPanel.Dock="Bottom" x:Name="bottomBar" Margin="0, 10, 0, 0">
                 <!-- For some reason this pushes the folderList to the side a little -->
                 <StackPanel Name="infoBar" HorizontalAlignment="Right" ct:DockPanel.Dock="Left" Orientation="Horizontal" Margin="0, 0, 10, 0"/>
                 <Button Name="viewFolder" ct:DockPanel.Dock="Right" HorizontalAlignment="Right" Click="ViewFolder">

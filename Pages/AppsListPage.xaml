@@ -60,10 +60,8 @@
         </StackPanel>
         -->
 
-
-
-        <ScrollViewer ct:DockPanel.Dock="Top" >
-            <ct:WrapPanel x:Name="appList" HorizontalAlignment="Center" />
+        <ScrollViewer ct:DockPanel.Dock="Top" x:Name="scrollView" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+            <ct:WrapPanel x:Name="appList" Orientation="Vertical" VerticalAlignment="Center" />
         </ScrollViewer>
     </ct:DockPanel>
 </Page>

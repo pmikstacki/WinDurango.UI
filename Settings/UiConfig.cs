@@ -26,6 +26,7 @@ public class UiConfigData
     public uint SaveVersion { get; set; } = App.VerPacked;
     public ThemeSetting Theme { get; set; } = ThemeSetting.Fluent;
     public bool DebugLoggingEnabled { get; set; } = false;
+    public bool AppViewIsHorizontalScrolling { get; set; } = false;
 
     public string Language { get; set; } = "en-US";
 
