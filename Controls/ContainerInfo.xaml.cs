@@ -159,7 +159,7 @@ namespace WinDurango.UI.Controls
         {
             Flyout flyout = new Flyout();
             TextBlock title = new TextBlock { Text = $"Rename {_displayName}" };
-            TextBox box = new TextBox();
+            TextBox box = new TextBox { Text = _displayName };
             Button button = new Button();
             box.KeyDown += (sender, e) =>
             {

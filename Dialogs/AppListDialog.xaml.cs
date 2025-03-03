@@ -10,13 +10,13 @@ using Image = Microsoft.UI.Xaml.Controls.Image;
 
 namespace WinDurango.UI.Dialogs
 {
-    public sealed partial class AppListDialog : ContentDialog
+    public sealed partial class AppListDialog
     {
-        public List<Package> Pkgs { get; set; } = new List<Package>();
+        public List<Package> Packages { get; set; }
 
         public AppListDialog(List<Package> packages, bool multiSelect = false)
         {
-            this.Pkgs = packages;
+            this.Packages = packages;
 
             this.DataContext = this;
 
@@ -35,15 +35,13 @@ namespace WinDurango.UI.Dialogs
 
             var listView = (ListView)sender;
 
-            foreach (var pkg in Pkgs)
+            foreach (Package pkg in Packages)
             {
-                var item = new ListViewItem();
-                item.MinWidth = 200;
-
-                var stackPanel = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal
-                };
+                // if we already have the package "installed" we will skip it (not show it in the AppListView)
+                if (App.InstalledPackages.GetPackages().Find(p => p.FamilyName == pkg.Id.FamilyName) != null) continue;
+                
+                ListViewItem item = new() { MinWidth = 200 };
+                StackPanel stackPanel = new() { Orientation = Orientation.Horizontal };
 
                 // NOTE: DO NOT TOUCH THIS MAGICAL SHIT 
                 // it throws massive error if the image is invalid somehow or whatever...
@@ -51,21 +49,23 @@ namespace WinDurango.UI.Dialogs
                 try
                 {
                     pkLogo = pkg.Logo;
-                } catch (Exception ex) {
-                    Logger.WriteError($"pkg.Logo threw {ex.GetType().ToString()} for {pkg.Id.FamilyName}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteError($"pkg.Logo threw {ex.GetType()} for {pkg.Id.FamilyName}");
                     Logger.WriteException(ex);
                 }
 
-                var packageLogo = new Image
+                // Some app logos are "empty" but pkg.Logo isn't null on them, why microsoft??
+                Image packageLogo = new()
                 {
                     Width = 64,
                     Height = 64,
                     Margin = new Thickness(5),
-                    Source = new BitmapImage(pkLogo ?? new Uri("ms-appx:///Assets/testimg.png"))
+                    Source = new BitmapImage(pkLogo ?? new Uri("ms-appx:///Assets/no_img64.png"))
                 };
-                //packageLogo.ImageFailed += LogoFailed;
 
-                var packageInfo = new StackPanel
+                StackPanel packageInfo = new()
                 {
                     Orientation = Orientation.Vertical,
                     Margin = new Thickness(5)
@@ -81,16 +81,13 @@ namespace WinDurango.UI.Dialogs
                     displayName = pkg.Id.Name;
                 }
 
-                var packageName = new TextBlock
+                TextBlock packageName = new()
                 {
                     Text = displayName ?? "Unknown",
                     FontWeight = FontWeights.Bold
                 };
 
-                var publisherName = new TextBlock
-                {
-                    Text = pkg.PublisherDisplayName ?? "Unknown"
-                };
+                TextBlock publisherName = new() { Text = pkg.PublisherDisplayName ?? "Unknown" };
 
                 packageInfo.Children.Add(packageName);
                 packageInfo.Children.Add(publisherName);
@@ -105,15 +102,7 @@ namespace WinDurango.UI.Dialogs
                 listView.Items.Add(item);
             }
         }
-
-
-
-        private void LogoFailed(object sender, ExceptionRoutedEventArgs e)
-        {
-            //var image = sender as Image;
-            //image.Source = new BitmapImage(new Uri("ms-appx:///Assets/testimg.png"));
-        }
-
+        
         private void AddToAppList(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             foreach (ListViewItem listViewItem in appListView.SelectedItems)
