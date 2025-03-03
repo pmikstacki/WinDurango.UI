@@ -78,8 +78,11 @@ jobs:
     - name: Restore the application
       run: dotnet restore
 
+    # We copy the contributors to the "env:Configuration" result, the origin path is now hardcoded so if ever the repo name changes this needs to be changed too
     - name: Publish
-      run: dotnet publish --configuration $env:Configuration --output ./$env:Configuration -r win-x64 /p:Platform=x64
+      run: |
+        dotnet publish --configuration $env:Configuration --output ./$env:Configuration -r win-x64 /p:Platform=x64
+        copy D:/a/WinDurango.UI/WinDurango.UI/Assets/contributors.txt ./$env:Configuration/Assets/contributors.txt
       env:
         Configuration: ${{ matrix.configuration }}
 
