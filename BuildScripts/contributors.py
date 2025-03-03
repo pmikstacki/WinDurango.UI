@@ -1,7 +1,7 @@
 import json
 import os
 
-f = open('Assets/contributors.txt', 'w+')
+f = open(os.path.join(os.path.dirname(__file__), "..", "Assets", "contributors.txt"), "w+")
 
 try:
     import requests

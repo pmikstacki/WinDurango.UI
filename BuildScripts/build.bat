@@ -1,4 +1,4 @@
-python -m venv BuildScripts\venv
-BuildScripts\venv\Scripts\activate
+python -m venv .\venv
+call .\venv\Scripts\activate
 pip install requests
-py BuildScripts\contributors.py
+py .\contributors.py
