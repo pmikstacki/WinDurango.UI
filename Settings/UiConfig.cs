@@ -32,6 +32,8 @@ public class UiConfigData
 
     public string DownloadedWdVer { get; set; } = String.Empty;
     public PatchSource DownloadSource { get; set; } = PatchSource.Release;
+
+    public bool ShowDevNotice { get; set; } = true;
 }
 
 // TODO: fix type init exception

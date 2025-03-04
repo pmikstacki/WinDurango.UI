@@ -8,6 +8,8 @@ using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using Windows.Foundation;
+using Windows.Gaming.Input;
 using Windows.Management.Deployment;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -21,6 +23,12 @@ namespace WinDurango.UI.Pages
 {
     public sealed partial class AppsListPage : Page
     {
+        private Gamepad gamepad;
+        private int currentIndex;
+        private Point currentPoint = new(0, 0);
+        private bool inputProcessed = true;
+        private long lastInput;
+        
         public async Task InitAppListAsync()
         {
             appList.Children.Clear();
@@ -138,14 +146,148 @@ namespace WinDurango.UI.Pages
             InitializeComponent();
             _ = InitAppListAsync();
 
-            // All this is useless now basically... because InitAppListAsync now runs asynchronously (not blocking the ui thread)
-            /*
-            Stopwatch PlatinumWatch = new Stopwatch();
-            Logger.WriteDebug("Initializing AppsListPage...");
-            PlatinumWatch.Start();
-            PlatinumWatch.Stop();
-            Logger.WriteDebug("Initialized AppsListPage in {0:D2}:{1:D2}:{2:D2}.{3:D3}", (int)PlatinumWatch.Elapsed.TotalHours, (int)PlatinumWatch.Elapsed.TotalMinutes, (int)PlatinumWatch.Elapsed.TotalSeconds, (int)PlatinumWatch.Elapsed.TotalMilliseconds);
-            */
+            Loaded += OnAppListPage_Loaded;
+        }
+        
+        private void OnAppListPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Gamepad.GamepadAdded += onGamepadAdded;
+            Gamepad.GamepadRemoved += OnGamepadRemoved;
+        }
+        
+        private void OnGamepadRemoved(object sender, Gamepad e)
+        {
+            gamepad = null;
+        }
+
+        private void onGamepadAdded(object sender, Gamepad e)
+        {
+            gamepad = e;
+            ListenGamepadInput();
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                if (appList.Children.Count > 0)
+                {
+                    appList.Children[currentIndex].Focus(FocusState.Keyboard);
+                }
+            });
+        }
+
+
+        private async void ListenGamepadInput()
+        {
+            while (gamepad != null)
+            {
+                GamepadReading gamepadInput = gamepad.GetCurrentReading();
+                bool moveRight = gamepadInput.LeftThumbstickX > 0.5 || (gamepadInput.Buttons & GamepadButtons.DPadRight) != 0;
+                bool moveLeft = gamepadInput.LeftThumbstickX < -0.5 || (gamepadInput.Buttons & GamepadButtons.DPadLeft) != 0;
+                bool moveUp = gamepadInput.LeftThumbstickY > 0.5 || (gamepadInput.Buttons & GamepadButtons.DPadUp) != 0;
+                bool moveDown = gamepadInput.LeftThumbstickY < -0.5 || (gamepadInput.Buttons & GamepadButtons.DPadDown) != 0;
+                bool actionClicked = (gamepadInput.Buttons & GamepadButtons.A) != 0;
+
+
+                if (actionClicked && inputProcessed)
+                {
+                    inputProcessed = false;
+                    this.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        var appTile = appList.Children[currentIndex] as AppTile;
+                        appTile.StartApp();
+                        inputProcessed = true;
+                    });
+                }
+
+                if ((moveRight || moveLeft || moveUp || moveDown) && inputProcessed)
+                {
+                    inputProcessed = false;
+                    if (moveRight) this.DispatcherQueue.TryEnqueue(() => MoveFocus(1, 0));
+                    else if (moveLeft) this.DispatcherQueue.TryEnqueue(() => MoveFocus(-1, 0));
+                    else if (moveUp) this.DispatcherQueue.TryEnqueue(() => MoveFocus(0, -1));
+                    else if (moveDown) this.DispatcherQueue.TryEnqueue(() => MoveFocus(0, 1));
+                }
+
+                await Task.Delay(100);
+            }
+        }
+
+        private void MoveFocus(int xOffset, int yOffset)
+        {
+            bool firstInput = lastInput == 0;
+            if (lastInput > DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 200)
+            {
+                inputProcessed = true;
+                return;
+            }
+            lastInput = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            if (appList.Children.Count == 0)
+            {
+                inputProcessed = true;
+                return;
+            }
+
+            // We only set focus first to the index 0 if ShowDevNotice was shown before as it cancels the initial focus done in Load event
+            if (firstInput && App.Settings.Settings.ShowDevNotice)
+            {
+                appList.Children[0].Focus(FocusState.Keyboard);
+                inputProcessed = true;
+                return;
+            }
+            
+            int columns = GetColumnCount();
+            int rows = appList.Children.Count / columns;
+
+            int newX = (int)(currentPoint.X + xOffset);
+            int newY = (int)(currentPoint.Y + yOffset);
+
+            newX = Math.Clamp(newX, 0, columns - 1);
+            newY = Math.Clamp(newY, 0, rows - 1);
+
+            if (newX != currentPoint.X || newY != currentPoint.Y)
+            {
+                currentPoint = new Point(newX, newY);
+                currentIndex = newY * columns + newX;
+
+                if (currentIndex < appList.Children.Count)
+                {
+                    appList.Children[currentIndex].Focus(FocusState.Keyboard);
+                }
+            }
+
+            inputProcessed = true;
+        }
+
+        // We need do this our self as WrapPanel doesn't have internal field or function to get current column amount
+        private int GetColumnCount()
+        {
+            if (appList.Children.Count == 0) return 1;
+
+
+            FrameworkElement firstItem = appList.Children[0] as FrameworkElement;
+            if (firstItem == null) return 1;
+
+
+            double firstItemTop = firstItem.TransformToVisual(appList).TransformPoint(new Point(0, 0)).Y;
+            int columnCount = 1;
+
+            for (int i = 1; i < appList.Children.Count; i++)
+            {
+                var item = appList.Children[i] as FrameworkElement;
+                if (item == null)
+                    continue;
+
+                double itemTop = item.TransformToVisual(appList).TransformPoint(new Point(0, 0)).Y;
+
+                if (Math.Abs(itemTop - firstItemTop) < 1)
+                {
+                    columnCount++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return columnCount;
         }
 
         private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
