@@ -153,7 +153,6 @@ namespace WinDurango.UI.Controls
             _Version = $"{_package.Id.Version.Major.ToString() ?? "U"}.{_package.Id.Version.Minor.ToString() ?? "U"}.{_package.Id.Version.Build.ToString() ?? "U"}.{_package.Id.Version.Revision.ToString() ?? "U"}";
             _Logo = _package.Logo;
 
-            XbManifestInfo xbInfo = _package.GetXbProperties();
             ManifestInfo mfInfo = _package.GetProperties();
 
             string ss = String.Empty;
