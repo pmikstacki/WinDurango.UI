@@ -70,7 +70,7 @@ namespace WinDurango.UI.Dialogs
             });
         }
 
-        public bool failed
+        public bool Failed
         {
             get => hasFailed;
         }
@@ -87,7 +87,7 @@ namespace WinDurango.UI.Dialogs
         {
             _dialog.DispatcherQueue.TryEnqueue(() =>
             {
-                _dialog.ShowAsync();
+                _ = _dialog.ShowAsync();
             });
         }
 

@@ -38,6 +38,7 @@ namespace WinDurango.UI.Dialogs
             foreach (Package pkg in Packages)
             {
                 // if we already have the package "installed" we will skip it (not show it in the AppListView)
+                // maybe this behavior should change?
                 if (App.InstalledPackages.GetPackages().Find(p => p.FamilyName == pkg.Id.FamilyName) != null) continue;
                 
                 ListViewItem item = new() { MinWidth = 200 };
