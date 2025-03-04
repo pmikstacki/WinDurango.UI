@@ -102,9 +102,18 @@ namespace WinDurango.UI
             if (String.IsNullOrEmpty(FSHelper.FindFileOnPath("vcruntime140d.dll")))
                 missing.Add("Microsoft Visual C++ Redistributable", null);
 
-            var devNotice = new NoticeDialog($"This UI is very early in development, and mainly developed by a C# learner... There WILL be bugs, and some things will NOT work...\n\nDevelopers, check Readme.md in the repo for the todolist.", "Important");
-            await devNotice.ShowAsync();
 
+            if (App.Settings.Settings.ShowDevNotice)
+            {
+                var devNotice = new NoticeDialog("This UI is very early in development, and mainly developed by a C# learner... There WILL be bugs, and some things will NOT work...\n\nDevelopers, check Readme.md in the repo for the todolist.", "Important");
+                await devNotice.ShowAsync();
+                
+                // We only show this notification once from now on
+                Settings.Set("ShowDevNotice", false);
+                Settings.Save();
+            }
+
+            
             if (missing.Count != 0)
             {
                 // todo: properly provide download link

@@ -26,6 +26,8 @@ namespace WinDurango.UI.Controls
         private string _Publisher;
         private string _Version;
         private Uri _Logo;
+        
+        private AppListEntry appListEntry;
 
         private async void HandleUnregister(object sender, SplitButtonClickEventArgs e)
         {
@@ -200,19 +202,19 @@ namespace WinDurango.UI.Controls
             catch
             {
                 Logger.WriteWarning($"Could not get the applist entries of \"{_Name}\"");
-            }
-            AppListEntry firstAppListEntry = appListEntries?.FirstOrDefault() ?? null;
+            } 
+            appListEntry = appListEntries?.FirstOrDefault() ?? null;
 
-            if (firstAppListEntry == null)
+            if (appListEntry == null)
                 Logger.WriteWarning($"Could not get the applist entry of \"{_Name}\"");
 
             if (String.IsNullOrEmpty(ss) || !File.Exists(ss))
             {
                 try
                 {
-                    if (firstAppListEntry != null)
+                    if (appListEntry != null)
                     {
-                        RandomAccessStreamReference logoStream = firstAppListEntry.DisplayInfo.GetLogo(new Size(320, 180));
+                        RandomAccessStreamReference logoStream = appListEntry.DisplayInfo.GetLogo(new Size(320, 180));
                         BitmapImage logoImage = new();
                         using IRandomAccessStream stream = logoStream.OpenReadAsync().GetAwaiter().GetResult();
                         logoImage.SetSource(stream);
@@ -275,24 +277,28 @@ namespace WinDurango.UI.Controls
                 rcFlyout.ShowAt(sender as FrameworkElement, e.GetPosition(sender as UIElement));
             };
 
-            startButton.Tapped += async (s, e) =>
+            startButton.Tapped += (_, _) => StartApp();
+        }
+        
+            
+        public async void StartApp()
+        {
+            if (_package.Status.LicenseIssue)
             {
-                if (_package.Status.LicenseIssue)
-                {
-                    Logger.WriteError($"Could not launch {_Name} due to licensing issue.");
-                    _ = new NoticeDialog($"There is a licensing issue... Do you own this package?", $"Could not launch {_Name}").ShowAsync();
-                    return;
-                }
+                Logger.WriteError($"Could not launch {_Name} due to licensing issue.");
+                _ = new NoticeDialog($"There is a licensing issue... Do you own this package?", $"Could not launch {_Name}").ShowAsync();
+                return;
+            }
 
-                if (firstAppListEntry == null)
-                {
-                    _ = new NoticeDialog($"Could not get the applist entry of \"{_Name}\"", $"Could not launch {_Name}").ShowAsync();
-                    return;
-                }
-                Logger.WriteInformation($"Launching {_Name}");
-                if (await firstAppListEntry.LaunchAsync() == false)
-                    _ = new NoticeDialog($"Failed to launch \"{_Name}\"!", $"Could not launch {_Name}").ShowAsync();
-            };
+            if (appListEntry == null)
+            {
+                _ = new NoticeDialog($"Could not get the applist entry of \"{_Name}\"", $"Could not launch {_Name}").ShowAsync();
+                return;
+            }
+            Logger.WriteInformation($"Launching {_Name}");
+            if (await appListEntry.LaunchAsync() == false)
+                _ = new NoticeDialog($"Failed to launch \"{_Name}\"!", $"Could not launch {_Name}").ShowAsync();
         }
     }
+
 }
