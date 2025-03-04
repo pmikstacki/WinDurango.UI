@@ -20,6 +20,13 @@ namespace WinDurango.UI
         public AppsListPage AppsListPage;
         public SettingsPage SettingsPage;
         public AboutPage AboutPage;
+        public AppMode currentMode;
+
+        public enum AppMode
+        {
+            DESKTOP,
+            CONTROLLER
+        }
 
         private void NavigationInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
@@ -139,6 +146,12 @@ namespace WinDurango.UI
             {
                 SetupTitleBar();
             }
+        }
+
+        public void SwitchMode(AppMode mode)
+        {
+            currentMode = mode;
+            navView.PaneDisplayMode = currentMode == AppMode.CONTROLLER ? NavigationViewPaneDisplayMode.Top : NavigationViewPaneDisplayMode.LeftCompact;
         }
 
         private void SetupTitleBar()

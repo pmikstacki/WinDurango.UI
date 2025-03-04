@@ -279,6 +279,41 @@ namespace WinDurango.UI.Controls
 
             startButton.Tapped += (_, _) => StartApp();
         }
+
+        public async void ShowControllerInteractDialog()
+        {
+            ContentDialog dialog = new ContentDialog();
+            dialog.XamlRoot = App.MainWindow.Content.XamlRoot;
+            dialog.Title = _package.DisplayName;
+            StackPanel optionsPanel = new StackPanel();
+            optionsPanel.HorizontalAlignment = HorizontalAlignment.Center;
+            dialog.Content = optionsPanel;
+
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = "NON-FUNCTIONAL";
+
+            // todo: onclick for all
+
+            // we need to either move the uninstall options somewhere else or figure out a way to make it work with controller
+            Button uninstallButton = new Button();
+            uninstallButton.Content = "Uninstall";
+            uninstallButton.Margin = new Thickness(0, 0, 0, 10);
+
+            Button manageSavesButton = new Button();
+            manageSavesButton.Content = "Manage saves";
+            manageSavesButton.Margin = new Thickness(0, 0, 0, 10);
+
+            Button manageModsButton = new Button();
+            manageModsButton.Content = "Manage mods";
+            manageModsButton.Margin = new Thickness(0, 0, 0, 10);
+
+            optionsPanel.Children.Add(textBlock);
+            optionsPanel.Children.Add(uninstallButton);
+            optionsPanel.Children.Add(manageSavesButton);
+            optionsPanel.Children.Add(manageModsButton);
+
+            await dialog.ShowAsync();
+        }
         
             
         public async void StartApp()
