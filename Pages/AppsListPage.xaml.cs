@@ -151,29 +151,37 @@ namespace WinDurango.UI.Pages
         
         private void OnAppListPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Gamepad.GamepadAdded += onGamepadAdded;
+            Gamepad.GamepadAdded += OnGamepadAdded;
             Gamepad.GamepadRemoved += OnGamepadRemoved;
         }
         
         private void OnGamepadRemoved(object sender, Gamepad e)
         {
+            Logger.WriteInformation("Controller disconnected");
             gamepad = null;
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                App.MainWindow.SwitchMode(MainWindow.AppMode.DESKTOP);
+            });
         }
 
-        private void onGamepadAdded(object sender, Gamepad e)
+        private void OnGamepadAdded(object sender, Gamepad e)
         {
+            Logger.WriteInformation("Controller connected");
             gamepad = e;
-            ListenGamepadInput();
             this.DispatcherQueue.TryEnqueue(() =>
             {
                 if (appList.Children.Count > 0)
                 {
                     appList.Children[currentIndex].Focus(FocusState.Keyboard);
                 }
+                App.MainWindow.SwitchMode(MainWindow.AppMode.CONTROLLER);
             });
+            ListenGamepadInput();
         }
 
 
+        // can we make this work everywhere, like in content dialogs?
         private async void ListenGamepadInput()
         {
             while (gamepad != null)
@@ -183,9 +191,12 @@ namespace WinDurango.UI.Pages
                 bool moveLeft = gamepadInput.LeftThumbstickX < -0.5 || (gamepadInput.Buttons & GamepadButtons.DPadLeft) != 0;
                 bool moveUp = gamepadInput.LeftThumbstickY > 0.5 || (gamepadInput.Buttons & GamepadButtons.DPadUp) != 0;
                 bool moveDown = gamepadInput.LeftThumbstickY < -0.5 || (gamepadInput.Buttons & GamepadButtons.DPadDown) != 0;
+                bool start = (gamepadInput.Buttons & GamepadButtons.Menu) != 0; // start as in the button, not start package
+                bool view = (gamepadInput.Buttons & GamepadButtons.View) != 0; // TODO: on click it should switch between the navigationview, bottom docked bar, and apps list (needs handling for other pages)
                 bool actionClicked = (gamepadInput.Buttons & GamepadButtons.A) != 0;
 
-
+                // feel like we should have like event listeners or whatever
+                // actionClicked += whatever
                 if (actionClicked && inputProcessed)
                 {
                     inputProcessed = false;
@@ -196,6 +207,19 @@ namespace WinDurango.UI.Pages
                         inputProcessed = true;
                     });
                 }
+
+                // disabled until controller support works
+                // also pressing start twice will crash cuz 2 contentdialogs
+                //if (start && inputProcessed)
+                //{
+                //    inputProcessed = false;
+                //    this.DispatcherQueue.TryEnqueue(() =>
+                //    {
+                //        var appTile = appList.Children[currentIndex] as AppTile;
+                //        appTile.ShowControllerInteractDialog();
+                //        inputProcessed = true;
+                //    });
+                //}
 
                 if ((moveRight || moveLeft || moveUp || moveDown) && inputProcessed)
                 {
@@ -213,7 +237,7 @@ namespace WinDurango.UI.Pages
         private void MoveFocus(int xOffset, int yOffset)
         {
             bool firstInput = lastInput == 0;
-            if (lastInput > DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 200)
+            if (lastInput > DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 10)
             {
                 inputProcessed = true;
                 return;

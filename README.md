@@ -19,6 +19,8 @@ For building you'll need Visual Studio 2022 with the following:
  - [X] Scan for already installed EraOS/XUWP stuff
  - [X] Allow for any existing installed package to be added to the applist
  - [ ] Built in updater 
+ - [ ] Controller support 
+ - [ ] Setup program (maybe MSIX?)
  - [ ] Fitting place for extra xbox-specific info
  - [ ] Resize content to fit to screen
  - [X] Allow for search
