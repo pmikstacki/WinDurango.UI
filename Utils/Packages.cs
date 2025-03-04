@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Windows.ApplicationModel.DynamicDependency;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
+using Windows.Networking;
 using WinDurango.UI.Dialogs;
 using WinUI3Localizer;
 using static WinDurango.UI.Localization.Locale;
@@ -17,14 +19,35 @@ namespace WinDurango.UI.Utils
     // this class sucks so much that we literally had to stop bc we didn't know how to rewrite a function and make it still work with the UI stuff
     // update: this was fixed same commit.
 #nullable enable
+
     public class ManifestInfo
     {
         public string? DisplayName { get; set; }
         public string? PublisherDisplayName { get; set; }
+        public string? StoreLogo { get; set; }
         public string? Logo { get; set; }
+        public string? WideLogo { get; set; }
+        public string? SmallLogo { get; set; }
         public string? Description { get; set; }
+        public string? SplashScreen { get; set; }
+        public (string? Name, string? Version)? OSPackageDependency { get; set; }
     }
-    public abstract class Packages
+
+    public class XbManifestInfo
+    {
+        public string[]? Ratings { get; set; }
+        public string? TitleId { get; set; }
+        public string? OsName { get; set; }
+        public string? ApplicationEnvironment { get; set; }
+        public bool? IsBackCompat { get; set; }
+
+        public bool IsEra(ManifestInfo mfInfo)
+        {
+            return (this.OsName?.Equals("era", StringComparison.OrdinalIgnoreCase) ?? false) ||
+                   (mfInfo.OSPackageDependency?.Name == "Microsoft.GameOs");
+        }
+    }
+    public static class Packages
     {
         // TODO: Make these methods not use the GUI, instead just throw an exception and catch it in the area where the method is actually invoked.
         /// <summary>
@@ -56,16 +79,67 @@ namespace WinDurango.UI.Utils
             }
 
             XDocument doc = XDocument.Parse(manifest);
-            XElement? package = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Package");
+            XElement? defaultTile = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "DefaultTile");
+            XElement? visualElements = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "VisualElements");
 
-            XElement? properties = package?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Properties");
+            manifestInfo.WideLogo = defaultTile?.Attribute("WideLogo")?.Value;
+            manifestInfo.StoreLogo = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Logo")?.Value;
+            manifestInfo.Logo = visualElements?.Attribute("Logo")?.Value;
+            manifestInfo.SmallLogo = visualElements?.Attribute("SmallLogo")?.Value;
+            manifestInfo.DisplayName = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "DisplayName")?.Value;
+            manifestInfo.PublisherDisplayName = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "PublisherDisplayName")?.Value;
+            manifestInfo.Description = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Description")?.Value;
+            manifestInfo.SplashScreen = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "SplashScreen")?.Attribute("Image")?.Value;
+            manifestInfo.OSPackageDependency = (doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "OSPackageDependency")?.Attribute("Name")?.Value, doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "OSPackageDependency")?.Attribute("Version")?.Value);
 
-            manifestInfo.Logo = properties?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Logo")?.Value;
-            manifestInfo.DisplayName = properties?.Descendants().FirstOrDefault(e => e.Name.LocalName == "DisplayName")?.Value;
-            manifestInfo.PublisherDisplayName = properties?.Descendants().FirstOrDefault(e => e.Name.LocalName == "PublisherDisplayName")?.Value;
-            manifestInfo.Description = properties?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Description")?.Value;
             return manifestInfo;
         }
+
+        public static ManifestInfo GetProperties(this Package pkg)
+        {
+            string installPath = pkg.InstalledPath;
+            string manifestPath = Path.Combine(installPath, "AppxManifest.xml");
+
+            return GetPropertiesFromManifest(manifestPath);
+        }
+
+        public static XbManifestInfo GetXbProperties(this Package pkg)
+        {
+            string installPath = pkg.InstalledPath;
+            string manifestPath = Path.Combine(installPath, "AppxManifest.xml");
+
+            return GetXbProperties(manifestPath);
+        }
+
+        /// <summary>
+        /// Gets Xbox specific properties from the provided AppxManifest
+        /// </summary>
+        public static XbManifestInfo GetXbProperties(string manifestPath)
+        {
+            XbManifestInfo info = new();
+
+            if (!File.Exists(manifestPath))
+                return info;
+
+            string manifest;
+            using (var stream = File.OpenRead(manifestPath))
+            {
+                var reader = new StreamReader(stream);
+                manifest = reader.ReadToEnd();
+            }
+
+            XDocument doc = XDocument.Parse(manifest);
+
+            info.Ratings = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "Ratings")?.Descendants().Select(e => e.Value).ToArray();
+            info.TitleId = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "XboxLive")?.Attribute("TitleId")?.Value;
+            info.OsName = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "OSName")?.Value;
+            info.ApplicationEnvironment = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "ApplicationEnvironment")?.Value;
+            bool.TryParse(doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "XboxFission")?.Attribute("IsFissionApp")?.Value, out bool isBackCompat);
+
+            info.IsBackCompat = isBackCompat;
+            return info;
+        }
+
 
         /// <summary>
         /// Installs an Xbox Package with the folder given to it
@@ -84,57 +158,6 @@ namespace WinDurango.UI.Utils
             }
 
             await InstallPackageAsync(new Uri(mountDir + "\\AppxManifest.xml", UriKind.Absolute), controller, addInstalledPackage);
-        }
-
-        /// <summary>
-        /// Gets a Package's splash screen, if none is found... it returns null.
-        /// </summary>
-        /// <remarks>
-        /// It checks the package's AppxManifest for Package.Applications.Application.VisualElements.SplashScreen.Image
-        /// </remarks>
-        public static string GetSplashScreenPath(Package pkg)
-        {
-            try
-            {
-                string installPath = pkg.InstalledPath;
-                string manifestPath = Path.Combine(installPath, "AppxManifest.xml");
-
-                if (!File.Exists(manifestPath))
-                    return null;
-
-                string manifest;
-                using (var stream = File.OpenRead(manifestPath))
-                {
-                    var reader = new StreamReader(stream);
-                    manifest = reader.ReadToEnd();
-                }
-
-                XDocument doc = XDocument.Parse(manifest);
-                XElement package = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Package");
-                if (package == null) return null;
-
-                XElement applications = package.Descendants().FirstOrDefault(e => e.Name.LocalName == "Applications");
-                if (applications == null) return null;
-
-                XElement application = applications.Descendants().FirstOrDefault(e => e.Name.LocalName == "Application");
-                if (application == null) return null;
-
-                XElement visualElements = application.Descendants().FirstOrDefault(e => e.Name.LocalName == "VisualElements");
-                if (visualElements == null) return null;
-
-                XElement splashScreen = visualElements.Descendants().FirstOrDefault(e => e.Name.LocalName == "SplashScreen");
-                if (splashScreen == null) return null;
-
-                string imagePath = splashScreen.Attribute("Image")?.Value;
-                if (imagePath == null) return null;
-
-                string splashScreenPath = Path.Combine(installPath, imagePath);
-                return splashScreenPath;
-            }
-            catch
-            {
-                return null;
-            }
         }
 
         /// <summary>
@@ -245,7 +268,7 @@ namespace WinDurango.UI.Utils
         /// <summary>
         /// Gets a Package by it's Family Name
         /// </summary>
-        public static Package GetPackageByFamilyName(string familyName)
+        public static Package? GetPackageByFamilyName(string familyName)
         {
             var packageManager = new PackageManager();
             var packages = packageManager.FindPackagesForUser(null, familyName);
@@ -256,7 +279,7 @@ namespace WinDurango.UI.Utils
         /// <summary>
         /// Gets the most recent installed package
         /// </summary>
-        public static Package GetMostRecentInstalledPackage()
+        public static Package? GetMostRecentInstalledPackage()
         {
             var sid = WindowsIdentity.GetCurrent().User?.Value;
             var pm = new PackageManager();

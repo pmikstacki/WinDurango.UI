@@ -109,7 +109,7 @@ namespace WinDurango.UI.Controls
             {
                 await WinDurangoPatcher.UnpatchPackage(_package, progress);
             });
-            if (!progress.failed)
+            if (!progress.Failed)
             {
                 NoticeDialog good = new NoticeDialog($"WinDurango has been uninstalled from package {_Name}", "Uninstalled");
                 await good.ShowAsync();
@@ -126,7 +126,7 @@ namespace WinDurango.UI.Controls
                 await WinDurangoPatcher.PatchPackage(_package, false, progress);
             });
 
-            if (!progress.failed)
+            if (!progress.Failed)
             {
                 NoticeDialog good = new NoticeDialog($"WinDurango has been installed in package {_Name}", "Installed");
                 await good.ShowAsync();
@@ -134,6 +134,7 @@ namespace WinDurango.UI.Controls
             App.MainWindow.ReloadAppList();
         }
 
+        // TODO: This can probably be improved
         public AppTile(string familyName)
         {
             _familyName = familyName;
@@ -152,7 +153,45 @@ namespace WinDurango.UI.Controls
             _Version = $"{_package.Id.Version.Major.ToString() ?? "U"}.{_package.Id.Version.Minor.ToString() ?? "U"}.{_package.Id.Version.Build.ToString() ?? "U"}.{_package.Id.Version.Revision.ToString() ?? "U"}";
             _Logo = _package.Logo;
 
-            string ss = Packages.GetSplashScreenPath(_package);
+            ManifestInfo mfInfo = _package.GetProperties();
+
+            string ss = String.Empty;
+
+            // TODO: This seems slow.
+            if (!string.IsNullOrEmpty(mfInfo.SplashScreen))
+            {
+                ss = Path.Combine(_package.InstalledPath, mfInfo.SplashScreen);
+                // if it doesn't exist it probably has some scale thing
+                if (!File.Exists(ss))
+                {
+                    for (int i = 100; i < 400; i += 100)
+                    {
+                        string path = Path.Combine(_package.InstalledPath, Path.GetDirectoryName(mfInfo.SplashScreen), Path.GetFileNameWithoutExtension(mfInfo.SplashScreen) + $".scale-{i}.png");
+                        if (File.Exists(path))
+                        {
+                            ss = path;
+                            break;
+                        }
+                    }
+                }
+            } else if (!string.IsNullOrEmpty(mfInfo.WideLogo))
+            {
+                ss = Path.Combine(_package.InstalledPath, mfInfo.WideLogo);
+                // if it doesn't exist it probably has some scale thing
+                if (!File.Exists(ss))
+                {
+                    for (int i = 100; i < 400; i += 100)
+                    {
+                        string path = Path.Combine(_package.InstalledPath, Path.GetDirectoryName(mfInfo.WideLogo), Path.GetFileNameWithoutExtension(mfInfo.WideLogo) + $".scale-{i}.png");
+                        if (File.Exists(path))
+                        {
+                            ss = path;
+                            break;
+                        }
+                    }
+                }
+            }
+
             IReadOnlyList<AppListEntry> appListEntries = null;
             try
             {
@@ -167,7 +206,7 @@ namespace WinDurango.UI.Controls
             if (firstAppListEntry == null)
                 Logger.WriteWarning($"Could not get the applist entry of \"{_Name}\"");
 
-            if (ss == null || !File.Exists(ss))
+            if (String.IsNullOrEmpty(ss) || !File.Exists(ss))
             {
                 try
                 {

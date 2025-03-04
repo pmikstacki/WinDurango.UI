@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.IO;
 using WinDurango.UI.Controls;
+using WinDurango.UI.Utils;
 
 
 namespace WinDurango.UI.Pages

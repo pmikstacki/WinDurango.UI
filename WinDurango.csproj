@@ -15,8 +15,8 @@
     <DisableXbfLineInfo>False</DisableXbfLineInfo>
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
 	<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-	<Version>0.1.2</Version>
-	<AssemblyVersion>0.1.2</AssemblyVersion>
+	<Version>0.1.2.1</Version>
+	<AssemblyVersion>0.1.2.1</AssemblyVersion>
 	<Product>WinDurango UI</Product>
 	<EnableMsixTooling>true</EnableMsixTooling>
 </PropertyGroup>
@@ -65,6 +65,7 @@
 		<Company>WinDurango</Company>
 		<PackageProjectUrl>https://github.com/WinDurango/WinDurango.UI</PackageProjectUrl>
 		<Nullable>disable</Nullable>
+		<FileVersion>0.1.2.1</FileVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
