@@ -134,8 +134,7 @@ namespace WinDurango.UI.Utils
             info.TitleId = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "XboxLive")?.Attribute("TitleId")?.Value;
             info.OsName = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "OSName")?.Value;
             info.ApplicationEnvironment = doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "ApplicationEnvironment")?.Value;
-            bool isBackCompat;
-            bool.TryParse(doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "XboxFission")?.Attribute("IsFissionApp")?.Value, out isBackCompat);
+            bool.TryParse(doc?.Descendants().FirstOrDefault(e => e.Name.LocalName == "XboxFission")?.Attribute("IsFissionApp")?.Value, out bool isBackCompat);
 
             info.IsBackCompat = isBackCompat;
             return info;
