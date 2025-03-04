@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.IO;
 using WinDurango.UI.Controls;
+using WinDurango.UI.Utils;
 
 
 namespace WinDurango.UI.Pages
@@ -14,16 +15,19 @@ namespace WinDurango.UI.Pages
         {
             this.InitializeComponent();
 
-            string[] lines = File.ReadAllLines("Assets/contributors.txt");
-            foreach (var contributor in lines)
+            if (File.Exists("Assets/contributors.txt"))
             {
-                string[] info = contributor.Split(";");
-                string name = info[0].Replace("WD_CONTRIB_SEMICOLON", ";");
-                string avatar = info[1].Replace("WD_CONTRIB_SEMICOLON", ";");
-                string link = info[2].Replace("WD_CONTRIB_SEMICOLON", ";");
-                string contributionCount = info[3];
+                string[] lines = File.ReadAllLines("Assets/contributors.txt");
+                foreach (var contributor in lines)
+                {
+                    string[] info = contributor.Split(";");
+                    string name = info[0].Replace("WD_CONTRIB_SEMICOLON", ";");
+                    string avatar = info[1].Replace("WD_CONTRIB_SEMICOLON", ";");
+                    string link = info[2].Replace("WD_CONTRIB_SEMICOLON", ";");
+                    string contributionCount = info[3];
 
-                contributorList.Children.Add(new ContributorInfo(name, avatar, link));
+                    contributorList.Children.Add(new ContributorInfo(name, avatar, link));
+                }
             }
         }
     }
