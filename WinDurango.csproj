@@ -229,6 +229,7 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="BuildScripts\build.bat" />
+    <Exec Command="build.bat" WorkingDirectory="$(ProjectDir)\BuildScripts" />
   </Target>
+
 </Project>
