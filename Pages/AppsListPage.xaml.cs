@@ -149,6 +149,9 @@ namespace WinDurango.UI.Pages
             Loaded += OnAppListPage_Loaded;
         }
         
+        // TODO: Reimplement whole controller support, we need consider global control implementation
+        // Read comments on line 189
+        
         private void OnAppListPage_Loaded(object sender, RoutedEventArgs e)
         {
             Gamepad.GamepadAdded += OnGamepadAdded;
@@ -182,6 +185,16 @@ namespace WinDurango.UI.Pages
 
 
         // can we make this work everywhere, like in content dialogs?
+        
+        // probably, we should either look if it could be possible to implement some global
+        // controller support what would work on all "UI Elements" like e.g all button elements would instantly
+        // be able to work if A button is clicked on controller
+        // if no, then we just have to implement manually on all pages/controllers... - atomsk
+        
+        // Note for other devs:
+        // This current controller support is just a "placeholder/experimental thing" until ^ above "global controller implementation" is done
+        // Forgive for my shit math mess below even im not fully sure how it all works after long trial and error... im not so good at math
+        // but at least it works
         private async void ListenGamepadInput()
         {
             while (gamepad != null)
@@ -224,20 +237,32 @@ namespace WinDurango.UI.Pages
                 if ((moveRight || moveLeft || moveUp || moveDown) && inputProcessed)
                 {
                     inputProcessed = false;
-                    if (moveRight) this.DispatcherQueue.TryEnqueue(() => MoveFocus(1, 0));
-                    else if (moveLeft) this.DispatcherQueue.TryEnqueue(() => MoveFocus(-1, 0));
-                    else if (moveUp) this.DispatcherQueue.TryEnqueue(() => MoveFocus(0, -1));
-                    else if (moveDown) this.DispatcherQueue.TryEnqueue(() => MoveFocus(0, 1));
+                    if (App.Settings.Settings.AppViewIsHorizontalScrolling)
+                    {
+                        if (moveRight) this.DispatcherQueue.TryEnqueue(() => MoveFocus(0, 1));
+                        else if (moveLeft) this.DispatcherQueue.TryEnqueue(() => MoveFocus(0, -1));
+                        else if (moveUp) this.DispatcherQueue.TryEnqueue(() => MoveFocus(-1, 0));
+                        else if (moveDown) this.DispatcherQueue.TryEnqueue(() => MoveFocus(1, 0));
+
+                    }
+                    else
+                    {
+                        if (moveRight) this.DispatcherQueue.TryEnqueue(() => MoveFocus(1, 0));
+                        else if (moveLeft) this.DispatcherQueue.TryEnqueue(() => MoveFocus(-1, 0));
+                        else if (moveUp) this.DispatcherQueue.TryEnqueue(() => MoveFocus(0, -1));
+                        else if (moveDown) this.DispatcherQueue.TryEnqueue(() => MoveFocus(0, 1));
+                    }
                 }
 
                 await Task.Delay(100);
             }
         }
 
+        // Absolute mess, don't touch unless u understand math and could rewrite this better... because I do not
         private void MoveFocus(int xOffset, int yOffset)
         {
             bool firstInput = lastInput == 0;
-            if (lastInput > DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 10)
+            if (lastInput > DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 120) // This being too low passes sometimes too many inputs for me - atomsk
             {
                 inputProcessed = true;
                 return;
@@ -256,15 +281,45 @@ namespace WinDurango.UI.Pages
                 inputProcessed = true;
                 return;
             }
-            
-            int columns = GetColumnCount();
-            int rows = appList.Children.Count / columns;
 
             int newX = (int)(currentPoint.X + xOffset);
             int newY = (int)(currentPoint.Y + yOffset);
 
-            newX = Math.Clamp(newX, 0, columns - 1);
-            newY = Math.Clamp(newY, 0, rows - 1);
+            int columns;
+            int rows;
+            if (App.Settings.Settings.AppViewIsHorizontalScrolling)
+            {
+                // in here rows are columns and columns are rows...
+                rows = GetColumnsInHorizontalMode();
+                columns = (GetRowCount() / rows) + 1;
+                
+
+                // Don't even ask  how this works, but these extraClamps are when bottom rows don't have enough cards to fill the total column amount
+                int extraClamp = 0;
+                if (newX != 0)
+                {
+                    extraClamp = Math.Abs(appList.Children.Count - (rows * columns)) - (columns - 2);
+                }
+
+                newX = Math.Clamp(newX, 0, columns - 1);
+                newY = Math.Clamp(newY, 0, rows - (1 + extraClamp));
+            }
+            else
+            {
+                columns = GetColumnCount();
+                rows = GetRowCount();
+                if (rows * columns < appList.Children.Count) rows++;
+
+                int extraClamp = 0;
+                if (newY == rows - 1)
+                {
+                    extraClamp = Math.Abs(appList.Children.Count - (rows * columns));
+                }
+
+                newX = Math.Clamp(newX, 0, columns - (1 + extraClamp));
+                newY = Math.Clamp(newY, 0, rows - 1);
+            }
+
 
             if (newX != currentPoint.X || newY != currentPoint.Y)
             {
@@ -280,24 +335,82 @@ namespace WinDurango.UI.Pages
             inputProcessed = true;
         }
 
+        private int GetColumnsInHorizontalMode()
+        {
+            if (appList.Children.Count == 0) return 1;
+
+            FrameworkElement firstItem = appList.Children[0] as FrameworkElement;
+            if (firstItem == null) return 1;
+
+            int rowCount = 1;
+
+            double firstItemLeft = firstItem.TransformToVisual(appList).TransformPoint(new Point(0, 0)).X;
+
+            for (int i = 1; i < appList.Children.Count; i++)
+            {
+                var item = appList.Children[i] as FrameworkElement;
+                if (item == null) continue;
+
+                double itemLeft = item.TransformToVisual(appList).TransformPoint(new Point(0, 0)).X;
+
+                if (Math.Abs(itemLeft - firstItemLeft) < 1)
+                {
+                    rowCount++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return (int)Math.Ceiling((double)appList.Children.Count / rowCount);
+        }
+
+        private int GetRowCount()
+        {
+            if (appList.Children.Count == 0) return 1;
+
+            FrameworkElement firstItem = appList.Children[0] as FrameworkElement;
+            if (firstItem == null) return 1;
+
+            int rowCount = 1;
+
+            double firstItemTop = firstItem.TransformToVisual(appList).TransformPoint(new Point(0, 0)).Y;
+
+            for (int i = 1; i < appList.Children.Count; i++)
+            {
+                var item = appList.Children[i] as FrameworkElement;
+                if (item == null) continue;
+
+                double itemTop = item.TransformToVisual(appList).TransformPoint(new Point(0, 0)).Y;
+
+                if (Math.Abs(itemTop - firstItemTop) > 1)
+                {
+                    rowCount++;
+                    firstItemTop = itemTop;
+                }
+            }
+
+            return rowCount;
+        }
+        
+
         // We need do this our self as WrapPanel doesn't have internal field or function to get current column amount
         private int GetColumnCount()
         {
             if (appList.Children.Count == 0) return 1;
 
-
             FrameworkElement firstItem = appList.Children[0] as FrameworkElement;
             if (firstItem == null) return 1;
 
+            int columnCount = 1;
 
             double firstItemTop = firstItem.TransformToVisual(appList).TransformPoint(new Point(0, 0)).Y;
-            int columnCount = 1;
 
             for (int i = 1; i < appList.Children.Count; i++)
             {
                 var item = appList.Children[i] as FrameworkElement;
-                if (item == null)
-                    continue;
+                if (item == null) continue;
 
                 double itemTop = item.TransformToVisual(appList).TransformPoint(new Point(0, 0)).Y;
 
@@ -310,6 +423,7 @@ namespace WinDurango.UI.Pages
                     break;
                 }
             }
+
 
             return columnCount;
         }
