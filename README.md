@@ -1,7 +1,7 @@
 # WinDurango.UI
 [![Join our Discord](https://img.shields.io/discord/1280176159010848790?color=2c9510&label=WinDurango%20Discord&logo=Discord&logoColor=white)](https://discord.gg/mHN2BgH7MR)
 [![View stargazers](https://img.shields.io/github/stars/WinDurango-project/WinDurango.UI)](https://github.com/WinDurango-project/WinDurango.UI/stargazers)   
-GUI for WinDurango, which allows you to install the compatibility layer into packages, as well as manage mods and saves. (+ more coming later probs)
+GUI for WinDurango, which allows you to install the compatibility layer into packages, as well as manage mods and saves. (+ more coming later probs)Ż
 
 You can get the latest builds from [GitHub Actions](https://github.com/WinDurango/WinDurango.UI/actions).   
 For building you'll need Visual Studio 2022 with the following:
